@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Acesso Unificado - CEEJA de Linhares</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background: #f0f2f5; display: flex; flex-direction: column; min-height: 100vh; justify-content: center; align-items: center; padding: 20px; }
+        .header-portal { text-align: center; margin-bottom: 30px; }
+        .header-portal h1 { color: #003366; font-size: 28px; margin-bottom: 8px; }
+        .header-portal p { color: #555; font-size: 15px; }
+        .login-wrapper { display: flex; gap: 30px; width: 100%; max-width: 900px; justify-content: center; flex-wrap: wrap; }
+        .login-card { background: #ffffff; padding: 35px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); flex: 1; min-width: 320px; display: flex; flex-direction: column; }
+        .card-aluno { border-top: 6px solid #0056b3; }
+        .card-equipe { border-top: 6px solid #003366; }
+        .card-title { font-size: 20px; font-weight: bold; margin-bottom: 20px; color: #333; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+        .form-group { margin-bottom: 18px; }
+        .form-group label { display: block; margin-bottom: 8px; color: #444; font-weight: 600; font-size: 14px; }
+        .form-group select, .form-group input { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 6px; font-size: 15px; background: #fff; }
+        .form-group select:focus, .form-group input:focus { border-color: #003366; outline: none; }
+        .btn-login { width: 100%; padding: 12px; border: none; color: white; font-size: 16px; font-weight: bold; border-radius: 6px; cursor: pointer; transition: background 0.3s; margin-top: 10px; }
+        .card-aluno .btn-login { background: #0056b3; }
+        .card-aluno .btn-login:hover { background: #004085; }
+        .card-equipe .btn-login { background: #003366; }
+        .card-equipe .btn-login:hover { background: #002244; }
+        .error-message { color: #cc0000; font-size: 14px; text-align: center; margin-top: 15px; display: none; }
+        @media (max-width: 768px) { .login-wrapper { flex-direction: column; gap: 20px; } }
+    </style>
+</head>
+<body>
+
+<div class="header-portal">
+    <h1>CEEJA de Linhares</h1>
+    <p>Escolha a opção correspondente para acessar o sistema</p>
+</div>
+
+<div class="login-wrapper">
+    <!-- PORTAL DO ALUNO -->
+    <div class="login-card card-aluno">
+        <div class="card-title">👨‍🎓 Portal do Aluno</div>
+        <form id="loginAlunoForm">
+            <div class="form-group">
+                <label for="cpfAluno">CPF do Aluno</label>
+                <input type="text" id="cpfAluno" placeholder="Digite seu CPF (apenas números)" required>
+            </div>
+            <div class="form-group">
+                <label for="senhaAluno">Senha de Acesso</label>
+                <input type="password" id="senhaAluno" placeholder="Digite sua senha" required>
+            </div>
+            <button type="submit" class="btn-login">Entrar como Aluno</button>
+            <div id="errorAluno" class="error-message">CPF ou senha incorretos!</div>
+        </form>
+    </div>
+
+    <!-- EQUIPE PROFISSIONAL -->
+    <div class="login-card card-equipe">
+        <div class="card-title">
+            <span>💼 Equipe Profissional</span>
+        </div>
+        <form id="loginEquipeForm">
+            <div class="form-group">
+                <label for="perfil">Perfil Profissional</label>
+                <select id="perfil" required>
+                    <option value="" disabled selected>Selecione seu perfil...</option>
+                    <option value="professor">Professor</option>
+                    <option value="secretaria">Secretaria</option>
+                    <option value="pedagogo">Pedagogo</option>
+                    <option value="diretor">Diretor</option>
+                    <option value="admin">Administrador</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="usuario">CPF ou Usuário</label>
+                <input type="text" id="usuario" placeholder="Digite seu CPF (apenas números)" required>
+            </div>
+            <div class="form-group">
+                <label for="senha">Senha</label>
+                <input type="password" id="senha" placeholder="Digite sua senha" required>
+            </div>
+            <button type="submit" class="btn-login">Entrar no Painel</button>
+            <div id="errorEquipe" class="error-message">Usuário, senha ou perfil incorretos!</div>
+        </form>
+    </div>
+</div>
+
+<script src="firebase-cloud.js"></script>
+    <script id="ceeja-app-script" type="text/plain">
+    function carregarDadosIniciais() {
+        let funcionarios = JSON.parse(localStorage.getItem('funcionariosCadastrados')) || [];
+        
+        const adminExiste = funcionarios.some(f => f.usuario.toLowerCase() === 'admin');
+
+        if (!adminExiste) {
+            funcionarios.push({
+                nome: "ADMINISTRADOR DO SISTEMA",
+                cpf: "admin",
+                telefone: "N/A",
+                usuario: "admin",
+                senha: "123",
+                perfil: "admin",
+                disciplinas: ["Língua Portuguesa", "Matemática", "História", "Geografia", "Ciências", "Arte", "Língua Inglesa", "Biologia", "Física", "Química", "Filosofia", "Sociologia", "Mundo do Trabalho"]
+            });
+            localStorage.setItem('funcionariosCadastrados', JSON.stringify(funcionarios));
+        }
+    }
+
+    document.getElementById('loginEquipeForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const perfilSelecionado = document.getElementById('perfil').value;
+        const usuarioDigitado = document.getElementById('usuario').value.trim().replace(/\D/g, '') || document.getElementById('usuario').value.trim().toLowerCase();
+        const senha = document.getElementById('senha').value;
+        const errorMsg = document.getElementById('errorEquipe');
+
+        const funcionarios = JSON.parse(localStorage.getItem('funcionariosCadastrados')) || [];
+
+        const encontrado = funcionarios.find(f => {
+            const matchUser = f.usuario.toLowerCase() === usuarioDigitado;
+            const matchSenha = f.senha === senha;
+            const isUserAdmin = f.perfil === 'admin';
+            
+            if (matchUser && matchSenha && isUserAdmin) return true;
+            return matchUser && matchSenha && f.perfil === perfilSelecionado;
+        });
+
+        if (encontrado) {
+            errorMsg.style.display = 'none';
+            sessionStorage.setItem('usuarioLogado', encontrado.usuario);
+            sessionStorage.setItem('perfilLogado', perfilSelecionado);
+            sessionStorage.setItem('dadosProfessorLogado', JSON.stringify({
+                ...encontrado,
+                perfil: perfilSelecionado
+            }));
+
+            const rotas = {
+                "professor": "painel_professor.html",
+                "secretaria": "painel_secretaria.html",
+                "pedagogo": "relatorio-pedagogico.html",
+                "diretor": "dashboard-geral.html",
+                "admin": "dashboard-geral.html"
+            };
+            window.location.href = rotas[perfilSelecionado] || "painel_professor.html";
+        } else {
+            errorMsg.style.display = 'block';
+        }
+    });
+
+    document.getElementById('loginAlunoForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const cpfDigitado = document.getElementById('cpfAluno').value.trim().replace(/\D/g, '');
+        const senhaDigitada = document.getElementById('senhaAluno').value.trim();
+        const errorMsg = document.getElementById('errorAluno');
+
+        const listaAlunos = JSON.parse(localStorage.getItem('cadastroAlunos')) || [];
+        const alunoValido = listaAlunos.find(a => a.cpf === cpfDigitado && a.senha === senhaDigitada);
+
+        if (alunoValido) {
+            errorMsg.style.display = 'none';
+            sessionStorage.setItem('alunoLogadoCPF', cpfDigitado);
+            sessionStorage.setItem('nomeAlunoLogado', alunoValido.nome);
+            window.location.href = 'painel-aluno.html';
+        } else {
+            errorMsg.style.display = 'block';
+        }
+    });
+
+    document.addEventListener('DOMContentLoaded', carregarDadosIniciais);
+</script>
+</body>
+</html>

@@ -1,0 +1,1140 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel do Professor - CEEJA Linhares</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #f4f6f9; padding: 20px; color: #333; }
+        .container { max-width: 980px; margin: 0 auto; }
+        .card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.06); margin-bottom: 20px; }
+        
+        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #f0f2f5; padding-bottom: 15px; margin-bottom: 20px; }
+        .header h1 { color: #003366; font-size: 22px; display: flex; align-items: center; gap: 8px; }
+        .header p { color: #666; font-size: 13px; margin-top: 4px; }
+        
+        .controles-topo { display: flex; align-items: center; gap: 10px; }
+        .btn-senha-discreto { background: transparent; border: 1px solid #ced4da; color: #555; padding: 8px 14px; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+        .btn-senha-discreto:hover { background: #e9ecef; color: #333; }
+        .btn-logout { background: #dc3545; color: white; border: none; padding: 8px 14px; border-radius: 6px; font-size: 13px; font-weight: bold; cursor: pointer; }
+        .btn-logout:hover { background: #c82333; }
+
+        .box-disciplinas { background: #e8f0fe; border-left: 5px solid #0056b3; padding: 12px 15px; border-radius: 6px; margin-bottom: 20px; font-size: 14px; color: #003366; font-weight: 600; }
+
+        .busca-container { position: relative; margin-bottom: 15px; }
+        .busca-container label { display: block; font-weight: bold; font-size: 14px; margin-bottom: 6px; color: #003366; }
+        .busca-container input { width: 100%; padding: 12px; border: 2px solid #003366; border-radius: 6px; font-size: 15px; outline: none; }
+        
+        .resultado-busca { position: absolute; top: 100%; left: 0; right: 0; background: white; border: 1px solid #ccc; border-top: none; border-radius: 0 0 6px 6px; max-height: 220px; overflow-y: auto; z-index: 1000; box-shadow: 0 4px 10px rgba(0,0,0,0.1); display: none; }
+        .item-resultado { padding: 12px; cursor: pointer; border-bottom: 1px solid #eee; font-size: 14px; }
+        .item-resultado:hover { background-color: #e8f0fe; }
+
+        .box-aluno-selecionado { background: #eef4fc; border: 2px solid #003366; border-radius: 8px; padding: 15px; margin-bottom: 20px; display: none; }
+        .info-aluno-topo { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+        .info-aluno-topo h3 { color: #003366; font-size: 18px; }
+        .tag-detalhe { background: #ffffff; border: 1px solid #ced4da; color: #495057; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; }
+
+        .nav-modulos { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+        .btn-modulo { flex: 1; min-width: 180px; padding: 12px 16px; border: 1px solid #ccc; background: #f8f9fa; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 13px; color: #555; transition: all 0.2s; text-align: center; }
+        .btn-modulo.ativo { background: #003366; color: white; border-color: #003366; }
+
+        .painel-acao { background: #f8f9fa; border: 1px solid #ddd; padding: 18px; border-radius: 8px; }
+        .painel-acao h4 { font-size: 15px; color: #003366; margin-bottom: 12px; border-bottom: 1px solid #ccc; padding-bottom: 5px; }
+
+        .form-grid-presenca { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 12px; margin-bottom: 15px; }
+        .form-grid-presenca select, .form-grid-presenca input { padding: 9px; border: 1px solid #ccc; border-radius: 5px; font-size: 13px; width: 100%; }
+        .btn-salvar-presenca { background: #28a745; color: white; border: none; padding: 10px 18px; border-radius: 5px; font-weight: bold; cursor: pointer; font-size: 14px; }
+
+        .card-etapa-bloco { background: #ffffff; border: 1px solid #d0d7de; border-radius: 8px; margin-bottom: 20px; overflow: hidden; }
+        .header-etapa-bloco { background: #003366; color: white; padding: 10px 15px; font-size: 14px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; }
+        .card-disciplina-uf { padding: 15px; border-bottom: 1px solid #eee; }
+        .card-disciplina-uf:last-child { border-bottom: none; }
+        .titulo-disciplina-uf { font-size: 14px; font-weight: bold; color: #003366; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
+        
+        .banner-alerta-bloqueio { background-color: #fff3cd; border: 1px solid #ffeeba; border-left: 5px solid #dc3545; color: #856404; padding: 12px 15px; border-radius: 5px; font-size: 13px; margin-bottom: 10px; }
+        .banner-alerta-bloqueio strong { color: #dc3545; display: block; margin-bottom: 5px; font-size: 14px; }
+        .banner-alerta-bloqueio ul { margin-left: 20px; margin-top: 5px; text-transform: uppercase; }
+        .banner-alerta-bloqueio li { margin-bottom: 3px; font-weight: bold; color: #333; }
+
+        .banner-etapa-concluida { background-color: #d4edda; border: 1px solid #c3e6cb; border-left: 5px solid #28a745; color: #155724; padding: 12px 15px; border-radius: 5px; font-size: 13px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; }
+        .banner-etapa-concluida-prof { background-color: #e8f0fe; border: 1px solid #b8daff; border-left: 5px solid #0056b3; color: #004085; padding: 10px 14px; border-radius: 5px; font-size: 12px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+
+        .autor-uf-tag { font-size: 11px; font-weight: bold; color: #0056b3; background: #e8f0fe; padding: 2px 6px; border-radius: 4px; border: 1px solid #b8daff; display: inline-block; margin-top: 4px; }
+        .autor-uf-tag.outro-prof { color: #856404; background: #fff3cd; border-color: #ffeeba; }
+
+        table.tabela-uf { width: 100%; border-collapse: collapse; margin-top: 5px; }
+        table.tabela-uf th, table.tabela-uf td { border: 1px solid #e0e0e0; padding: 6px; font-size: 12px; text-align: center; }
+        table.tabela-uf th { background: #f0f4f8; color: #003366; font-weight: 600; }
+        
+        table.tabela-uf td input { width: 55px; padding: 5px; text-align: center; border: 1px solid #ccc; border-radius: 4px; font-weight: bold; font-size: 12px; -moz-appearance: textfield; }
+        table.tabela-uf td input::-webkit-outer-spin-button,
+        table.tabela-uf td input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+        table.tabela-uf td input:disabled { background-color: #e9ecef; color: #6c757d; cursor: not-allowed; border-color: #ced4da; }
+
+        .badge-media { font-weight: bold; padding: 4px 6px; border-radius: 4px; display: inline-block; min-width: 45px; }
+        .media-aprovado { background: #d4edda; color: #155724; }
+        .media-reprovado { background: #f8d7da; color: #721c24; }
+        .media-pendente { background: #e9ecef; color: #6c757d; }
+
+        .box-fechamento-etapa { background: #f8f9fa; border: 1px solid #003366; border-radius: 6px; padding: 12px; margin-top: 10px; display: flex; justify-content: space-between; align-items: center; font-weight: bold; font-size: 13px; color: #003366; }
+
+        .btn-salvar-uf { background: #28a745; color: white; border: none; padding: 4px 8px; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 11px; transition: background 0.2s; }
+        .btn-salvar-uf:hover { background: #218838; }
+        .btn-limpar-uf { background: #dc3545; color: white; border: none; padding: 4px 8px; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 11px; margin-left: 4px; }
+        .btn-limpar-uf:hover { background: #bd2130; }
+
+        table.tabela-presencas { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        table.tabela-presencas th, table.tabela-presencas td { border: 1px solid #ddd; padding: 10px; font-size: 13px; text-align: left; }
+        table.tabela-presencas th { background: #003366; color: white; }
+        .btn-excluir-presenca { background: #dc3545; color: white; border: none; padding: 5px 10px; border-radius: 4px; font-size: 12px; font-weight: bold; cursor: pointer; }
+        .btn-excluir-presenca:hover { background: #bd2130; }
+
+        .tag-tipo-evento { font-size: 11px; font-weight: bold; padding: 3px 6px; border-radius: 4px; display: inline-block; }
+        .tag-tipo-presenca { background: #e8f0fe; color: #0056b3; border: 1px solid #b8daff; }
+        .tag-tipo-avaliacao { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+
+        .alerta-sem-aluno { text-align: center; padding: 35px 20px; color: #666; font-size: 14px; background: #fff; border: 2px dashed #bbb; border-radius: 8px; }
+
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.4); justify-content: center; align-items: center; }
+        .modal-conteudo { background: white; padding: 25px; border-radius: 10px; width: 90%; max-width: 380px; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 8px; }
+        .modal-header h3 { font-size: 16px; color: #003366; }
+        .fechar-modal { cursor: pointer; font-size: 20px; color: #888; font-weight: bold; }
+        .form-group-modal { margin-bottom: 12px; }
+        .form-group-modal label { display: block; font-size: 12px; font-weight: 600; color: #555; margin-bottom: 4px; }
+        .form-group-modal input { width: 100%; padding: 9px; border: 1px solid #ccc; border-radius: 5px; font-size: 13px; }
+        .btn-salvar-senha-modal { width: 100%; background: #003366; color: white; border: none; padding: 10px; border-radius: 5px; font-weight: bold; cursor: pointer; font-size: 13px; margin-top: 8px; }
+        .btn-salvar-senha-modal:hover { background: #002244; }
+        .msg-modal { padding: 8px; border-radius: 4px; margin-top: 10px; display: none; text-align: center; font-size: 12px; font-weight: bold; }
+        .msg-sucesso { background: #d4edda; color: #155724; }
+        .msg-erro { background: #f8d7da; color: #721c24; }
+
+        @media (max-width: 768px) {
+            .form-grid-presenca { grid-template-columns: 1fr 1fr; }
+            table.tabela-uf td input { width: 45px; }
+        }
+        @media (max-width: 500px) {
+            .form-grid-presenca { grid-template-columns: 1fr; }
+            .header { flex-direction: column; gap: 10px; text-align: center; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="card">
+        <div class="header">
+            <div>
+                <h1 id="nomeProf">👨‍🏫 Painel do Professor</h1>
+                <p>Lançamento de Frequência e Acompanhamento por Unidades Formativas</p>
+            </div>
+            <div class="controles-topo">
+                <button class="btn-senha-discreto" onclick="abrirModalSenha()">🔒 Alterar Senha</button>
+                <button class="btn-logout" onclick="fazerLogout()">Sair 🚪</button>
+            </div>
+        </div>
+
+        <div class="box-disciplinas">
+            📘 Disciplinas Atribuídas: <span id="listaDisciplinasProf">Carregando...</span>
+        </div>
+
+        <!-- BARRA DE PESQUISA FIXA GLOBAL DE ALUNO -->
+        <div class="busca-container">
+            <label for="inputBuscaGlobal">🔍 Pesquisar Estudante</label>
+            <input type="text" id="inputBuscaGlobal" placeholder="Digite o nome, CPF ou matrícula do estudante..." oninput="buscarAlunoGlobal()" autocomplete="off">
+            <div id="resultadoBuscaGlobal" class="resultado-busca"></div>
+        </div>
+
+        <!-- CARD DO ALUNO SELECIONADO -->
+        <div id="boxAlunoGlobal" class="box-aluno-selecionado">
+            <div class="info-aluno-topo">
+                <div>
+                    <h3 id="nomeAlunoGlobalDisplay"></h3>
+                    <span class="tag-detalhe" id="matriculaAlunoGlobalDisplay"></span>
+                    <span class="tag-detalhe" id="cpfAlunoGlobalDisplay"></span>
+                    <span class="tag-detalhe" id="ensinoAlunoGlobalDisplay" style="background:#003366; color:white;"></span>
+                </div>
+                <button onclick="limparAlunoSelecionado()" style="background:#dc3545; color:white; border:none; padding:6px 12px; border-radius:4px; font-weight:bold; cursor:pointer;">Limpar / Trocar Aluno</button>
+            </div>
+        </div>
+
+        <!-- NAVEGAÇÃO DE ABAS -->
+        <div class="nav-modulos">
+            <button class="btn-modulo ativo" id="btnAbaLancPresenca" onclick="alternarAba('lancPresenca')">📋 Lançamento de Presença</button>
+            <button class="btn-modulo" id="btnAbaLancNota" onclick="alternarAba('lancNota')">📝 Lançamento de Notas / UFs</button>
+            <button class="btn-modulo" id="btnAbaHistoricoAluno" onclick="alternarAba('historicoAluno')">📖 Histórico do Aluno</button>
+            <button class="btn-modulo" id="btnAbaMinhasPresencas" onclick="alternarAba('minhasPresencas')">📌 Minhas Presenças</button>
+        </div>
+
+        <!-- ABA 1: PRESENÇA -->
+        <div id="secaoLancPresenca">
+            <div id="alertaSemAlunoPresenca" class="alerta-sem-aluno">
+                🔍 <strong>Nenhum estudante selecionado.</strong><br>Pesquise e selecione um estudante na barra no topo para registrar presenças.
+            </div>
+
+            <div id="conteudoPresenca" style="display:none;">
+                <div class="painel-acao">
+                    <h4>📋 Registrar Presença / Atendimento</h4>
+                    <form onsubmit="salvarPresenca(event)">
+                        <div class="form-grid-presenca">
+                            <div>
+                                <label style="font-size:12px; font-weight:bold;">Componente Curricular:</label>
+                                <select id="selectDiscPresenca" required></select>
+                            </div>
+                            <div>
+                                <label style="font-size:12px; font-weight:bold;">Professor Responsável:</label>
+                                <input type="text" id="campoNomeProfessorPres" readonly style="background:#e9ecef; font-weight:bold; color:#003366;">
+                            </div>
+                            <div>
+                                <label style="font-size:12px; font-weight:bold;">Data do Atendimento:</label>
+                                <input type="date" id="dataPresenca" required>
+                            </div>
+                            <div>
+                                <label style="font-size:12px; font-weight:bold;">Horário da Presença:</label>
+                                <input type="time" id="horaPresenca" required>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn-salvar-presenca">✔ Confirmar Presença</button>
+                    </form>
+                    <div id="msgPresencaSucesso" class="msg-modal msg-sucesso">Presença salva com sucesso!</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ABA 2: NOTAS POR UF -->
+        <div id="secaoLancNota" style="display:none;">
+            <div id="alertaSemAlunoNota" class="alerta-sem-aluno">
+                🔍 <strong>Nenhum estudante selecionado.</strong><br>Pesquise e selecione um estudante na barra no topo para lançar notas de UFs.
+            </div>
+
+            <div id="conteudoNota" style="display:none;">
+                <div class="painel-acao">
+                    <h4>📝 Ficha de Acompanhamento por Unidade Formativa (UF)</h4>
+                    <p style="font-size: 12px; color: #dc3545; font-weight: bold; margin-bottom: 15px; background: #fff3cd; padding: 8px 12px; border-radius: 5px; border: 1px solid #ffeeba;">
+                        🔒 Regra de Segurança: Professores diferentes podem lançar UFs distintas da mesma disciplina. Contudo, nenhuma alteração ou exclusão é permitida em UFs já lançadas por outro docente.
+                    </p>
+                    
+                    <div id="containerEtapasUnidades"></div>
+
+                    <div id="msgNotaSucesso" class="msg-modal msg-sucesso" style="margin-top:15px;">Notas salvas com sucesso!</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ABA 3: HISTÓRICO GERAL DO ALUNO -->
+        <div id="secaoHistoricoAluno" style="display:none;">
+            <div style="background:#f8f9fa; border:1px solid #ced4da; padding:15px; border-radius:8px; margin-bottom:15px;">
+                <h3 style="color:#003366; font-size:16px; margin-bottom:8px;">📖 Histórico Completo do Estudante</h3>
+                <p style="font-size:13px; color:#666;">Cronograma completo contendo <strong>Presenças de Atendimento</strong> e <strong>Avaliações de Unidades Formativas (UFs)</strong> registradas por todos os professores.</p>
+            </div>
+
+            <div id="alertaSemAlunoHist" class="alerta-sem-aluno">
+                🔍 <strong>Nenhum estudante selecionado.</strong><br>Pesquise e selecione um estudante na barra no topo para visualizar seu histórico completo.
+            </div>
+
+            <div id="conteudoHistorico" style="display:none;">
+                <table class="tabela-presencas">
+                    <thead>
+                        <tr>
+                            <th>Data / Hora</th>
+                            <th>Tipo de Registro</th>
+                            <th>Componente Curricular / Detalhes</th>
+                            <th>Professor Responsável</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabelaHistoricoGeralAluno"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ABA 4: MINHAS PRESENÇAS -->
+        <div id="secaoMinhasPresencas" style="display:none;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; flex-wrap:wrap; gap:10px;">
+                <h3 style="color:#003366; font-size:16px;">📌 Minhas Presenças Lançadas</h3>
+                <input type="text" id="filtroMinhasPres" placeholder="Filtrar por nome de aluno..." oninput="carregarMinhasPresencasProf()" style="padding:8px 12px; border:1px solid #ccc; border-radius:5px; font-size:13px; width:250px;">
+            </div>
+
+            <table class="tabela-presencas">
+                <thead>
+                    <tr>
+                        <th>Data e Hora</th>
+                        <th>Estudante</th>
+                        <th>CPF</th>
+                        <th>Componente</th>
+                        <th>Ação</th>
+                    </tr>
+                </thead>
+                <tbody id="tabelaMinhasPresencasProf"></tbody>
+            </table>
+        </div>
+
+    </div>
+</div>
+
+<!-- MODAL ALTERAR SENHA -->
+<div id="modalSenha" class="modal">
+    <div class="modal-conteudo">
+        <div class="modal-header">
+            <h3>Alterar Senha de Acesso</h3>
+            <span class="fechar-modal" onclick="fecharModalSenha()">&times;</span>
+        </div>
+        <form id="formAlterarSenha" onsubmit="alterarMinhaSenha(event)">
+            <div class="form-group-modal">
+                <label for="senhaAtual">Senha Atual</label>
+                <input type="password" id="senhaAtual" placeholder="Digite sua senha atual" required>
+            </div>
+            <div class="form-group-modal">
+                <label for="novaSenha">Nova Senha</label>
+                <input type="password" id="novaSenha" placeholder="Digite a nova senha" required>
+            </div>
+            <button type="submit" class="btn-salvar-senha-modal">Atualizar Senha</button>
+            <div id="msgSucessoSenha" class="msg-modal msg-sucesso">Senha alterada com sucesso!</div>
+            <div id="msgErroSenha" class="msg-modal msg-erro">Senha atual incorreta!</div>
+        </form>
+    </div>
+</div>
+
+<script src="firebase-cloud.js"></script>
+    <script id="ceeja-app-script" type="text/plain">
+    const perfilLogado = sessionStorage.getItem('perfilLogado');
+    const usuarioLogado = sessionStorage.getItem('usuarioLogado');
+    const dadosProf = JSON.parse(sessionStorage.getItem('dadosProfessorLogado')) || {};
+    let alunoSelecionado = null;
+    let abaAtual = 'lancPresenca';
+
+    const disciplinasFundamental = [
+        "Língua Portuguesa", "Matemática", "História", "Geografia", 
+        "Ciências", "Arte", "Língua Inglesa", "Mundo do Trabalho"
+    ];
+
+    const disciplinasMedio = [
+        "Língua Portuguesa", "Matemática", "História", "Geografia", 
+        "Biologia", "Física", "Química", "Filosofia", "Sociologia", 
+        "Arte", "Língua Inglesa", "Mundo do Trabalho"
+    ];
+
+    if (!perfilLogado || (perfilLogado !== 'professor' && perfilLogado !== 'admin' && perfilLogado !== 'diretor')) {
+        alert("Acesso restrito a Professores e Gestão!");
+        window.location.href = 'index.html'; // Atualizado para index.html
+    } else {
+        const nomeProfessorAtual = dadosProf.nome || 'Professor';
+        document.getElementById('nomeProf').innerText = `👨‍🏫 ${nomeProfessorAtual}`;
+        document.getElementById('campoNomeProfessorPres').value = nomeProfessorAtual;
+
+        const discArray = dadosProf.disciplinas || [];
+        document.getElementById('listaDisciplinasProf').innerText = discArray.length > 0 ? discArray.join(', ') : 'Todas as Disciplinas';
+        
+        const agora = new Date();
+        document.getElementById('dataPresenca').value = agora.toISOString().split('T')[0];
+        document.getElementById('horaPresenca').value = agora.toTimeString().substring(0, 5);
+    }
+
+    function obterUFsOficiais(ensino, etapaNome, disciplina) {
+        const discUpper = (disciplina || '').toUpperCase();
+
+        if (ensino === 'Médio') {
+            if (["ARTE", "FILOSOFIA", "SOCIOLOGIA", "LÍNGUA INGLESA", "INGLÊS"].includes(discUpper)) {
+                if (etapaNome.includes("1ª")) return ["UF 1"];
+                if (etapaNome.includes("2ª")) return ["UF 2"];
+                if (etapaNome.includes("3ª")) return ["UF 3"];
+            }
+            if (discUpper === "MUNDO DO TRABALHO") return ["UF 1"];
+            if (["HISTÓRIA", "GEOGRAFIA", "BIOLOGIA", "QUÍMICA", "FÍSICA"].includes(discUpper)) {
+                if (etapaNome.includes("1ª")) return ["UF 1", "UF 2"];
+                if (etapaNome.includes("2ª")) return ["UF 3", "UF 4", "UF 5"];
+                if (etapaNome.includes("3ª")) return ["UF 6", "UF 7", "UF 8"];
+            }
+            if (etapaNome.includes("1ª")) return ["UF 1", "UF 2", "UF 3"];
+            if (etapaNome.includes("2ª")) return ["UF 4", "UF 5", "UF 6"];
+            if (etapaNome.includes("3ª")) return ["UF 7", "UF 8", "UF 9"];
+
+        } else {
+            if (["ARTE", "LÍNGUA INGLESA", "INGLÊS"].includes(discUpper)) {
+                if (etapaNome.includes("5ª")) return ["UF 1"];
+                if (etapaNome.includes("6ª")) return ["UF 2"];
+                if (etapaNome.includes("7ª")) return ["UF 3"];
+                if (etapaNome.includes("8ª")) return ["UF 4"];
+            }
+            if (discUpper === "MUNDO DO TRABALHO") return ["UF 1"];
+            if (etapaNome.includes("5ª")) return ["UF 1", "UF 2"];
+            if (etapaNome.includes("6ª")) return ["UF 3", "UF 4"];
+            if (etapaNome.includes("7ª")) return ["UF 5", "UF 6", "UF 7"];
+            if (etapaNome.includes("8ª")) return ["UF 8", "UF 9", "UF 10"];
+        }
+
+        return ["UF 1", "UF 2"];
+    }
+
+    function alternarAba(aba) {
+        abaAtual = aba;
+        const btnLancPres = document.getElementById('btnAbaLancPresenca');
+        const btnLancNota = document.getElementById('btnAbaLancNota');
+        const btnHistAluno = document.getElementById('btnAbaHistoricoAluno');
+        const btnMinhas = document.getElementById('btnAbaMinhasPresencas');
+
+        const secLancPres = document.getElementById('secaoLancPresenca');
+        const secLancNota = document.getElementById('secaoLancNota');
+        const secHistAluno = document.getElementById('secaoHistoricoAluno');
+        const secMinhas = document.getElementById('secaoMinhasPresencas');
+
+        btnLancPres.classList.remove('ativo');
+        btnLancNota.classList.remove('ativo');
+        btnHistAluno.classList.remove('ativo');
+        btnMinhas.classList.remove('ativo');
+
+        secLancPres.style.display = 'none';
+        secLancNota.style.display = 'none';
+        secHistAluno.style.display = 'none';
+        secMinhas.style.display = 'none';
+
+        if (aba === 'lancPresenca') {
+            btnLancPres.classList.add('ativo');
+            secLancPres.style.display = 'block';
+        } else if (aba === 'lancNota') {
+            btnLancNota.classList.add('ativo');
+            secLancNota.style.display = 'block';
+        } else if (aba === 'historicoAluno') {
+            btnHistAluno.classList.add('ativo');
+            secHistAluno.style.display = 'block';
+            carregarHistoricoGeralAluno();
+        } else if (aba === 'minhasPresencas') {
+            btnMinhas.classList.add('ativo');
+            secMinhas.style.display = 'block';
+            carregarMinhasPresencasProf();
+        }
+
+        atualizarInterfaceAbas();
+    }
+
+    function buscarAlunoGlobal() {
+        const campo = document.getElementById('inputBuscaGlobal');
+        const termo = campo.value.toLowerCase().trim().replace(/[\.\-\s]/g, '');
+        const painelResultados = document.getElementById('resultadoBuscaGlobal');
+
+        if (!campo.value.trim()) {
+            painelResultados.style.display = 'none';
+            return;
+        }
+
+        const todosAlunos = JSON.parse(localStorage.getItem('cadastroAlunos')) || [];
+        const filtrados = todosAlunos.filter(a => {
+            const nome = (a.nome || '').toLowerCase();
+            const cpf = (a.cpf || '').replace(/[\.\-\s]/g, '');
+            const matricula = (a.matricula || '').toLowerCase();
+            return nome.includes(campo.value.toLowerCase()) || cpf.includes(termo) || matricula.includes(campo.value.toLowerCase());
+        });
+
+        painelResultados.innerHTML = '';
+
+        if (filtrados.length === 0) {
+            painelResultados.innerHTML = '<div class="item-resultado" style="color:#888;">NENHUM ESTUDANTE ENCONTRADO</div>';
+            painelResultados.style.display = 'block';
+            return;
+        }
+
+        filtrados.forEach(aluno => {
+            const item = document.createElement('div');
+            item.className = 'item-resultado';
+            item.innerHTML = `<strong>${aluno.nome.toUpperCase()}</strong> <small>(CPF: ${aluno.cpf} | Matrícula: ${aluno.matricula || 'N/A'})</small>`;
+            item.onclick = function() { selecionarAlunoGlobal(aluno); };
+            painelResultados.appendChild(item);
+        });
+
+        painelResultados.style.display = 'block';
+    }
+
+    function selecionarAlunoGlobal(aluno) {
+        alunoSelecionado = aluno;
+        document.getElementById('inputBuscaGlobal').value = '';
+        document.getElementById('resultadoBuscaGlobal').style.display = 'none';
+
+        document.getElementById('nomeAlunoGlobalDisplay').innerText = aluno.nome.toUpperCase();
+        document.getElementById('matriculaAlunoGlobalDisplay').innerText = `Matrícula: ${aluno.matricula || 'N/A'}`;
+        document.getElementById('cpfAlunoGlobalDisplay').innerText = `CPF: ${aluno.cpf}`;
+        document.getElementById('ensinoAlunoGlobalDisplay').innerText = `Curso: ${aluno.ensino || 'Não Informado'}`;
+
+        document.getElementById('boxAlunoGlobal').style.display = 'block';
+
+        atualizarInterfaceAbas();
+    }
+
+    function limparAlunoSelecionado() {
+        alunoSelecionado = null;
+        document.getElementById('boxAlunoGlobal').style.display = 'none';
+        document.getElementById('inputBuscaGlobal').value = '';
+        document.getElementById('inputBuscaGlobal').focus();
+
+        atualizarInterfaceAbas();
+    }
+
+    function atualizarInterfaceAbas() {
+        if (!alunoSelecionado) {
+            document.getElementById('alertaSemAlunoPresenca').style.display = 'block';
+            document.getElementById('conteudoPresenca').style.display = 'none';
+
+            document.getElementById('alertaSemAlunoNota').style.display = 'block';
+            document.getElementById('conteudoNota').style.display = 'none';
+
+            document.getElementById('alertaSemAlunoHist').style.display = 'block';
+            document.getElementById('conteudoHistorico').style.display = 'none';
+
+            return;
+        }
+
+        let listaDisc = dadosProf.disciplinas || [];
+        if (listaDisc.length === 0) {
+            listaDisc = alunoSelecionado.ensino === 'Fundamental' ? disciplinasFundamental : disciplinasMedio;
+        }
+
+        document.getElementById('alertaSemAlunoPresenca').style.display = 'none';
+        document.getElementById('conteudoPresenca').style.display = 'block';
+        const selectDisc = document.getElementById('selectDiscPresenca');
+        selectDisc.innerHTML = '';
+        listaDisc.forEach(d => {
+            const opt = document.createElement('option');
+            opt.value = d;
+            opt.textContent = d;
+            selectDisc.appendChild(opt);
+        });
+
+        document.getElementById('alertaSemAlunoNota').style.display = 'none';
+        document.getElementById('conteudoNota').style.display = 'block';
+        carregarFormularioEtapasEUnidades(alunoSelecionado, listaDisc);
+
+        document.getElementById('alertaSemAlunoHist').style.display = 'none';
+        document.getElementById('conteudoHistorico').style.display = 'block';
+        carregarHistoricoGeralAluno();
+    }
+
+    function obterPendenciasEtapaAnterior(historico, listaDisciplinas, idxEtapaAnterior) {
+        if (idxEtapaAnterior < 0) return [];
+        let pendencias = [];
+        for (let d = 0; d < listaDisciplinas.length; d++) {
+            const discNome = listaDisciplinas[d];
+            if (discNome === "Mundo do Trabalho" && idxEtapaAnterior > 0) continue;
+            const estadosDisc = historico[discNome] || [];
+            if (!estadosDisc[idxEtapaAnterior]) {
+                pendencias.push(discNome);
+            }
+        }
+        return pendencias;
+    }
+
+    function carregarFormularioEtapasEUnidades(aluno, listaDisciplinas) {
+        const container = document.getElementById('containerEtapasUnidades');
+        container.innerHTML = '';
+
+        const isFundamental = aluno.ensino === 'Fundamental';
+        const listaDisciplinasTodas = isFundamental ? disciplinasFundamental : disciplinasMedio;
+
+        const listaEtapas = isFundamental ? 
+            [
+                { id: 'E5', nome: '5ª Etapa / 6º Ano', idx: 0 },
+                { id: 'E6', nome: '6ª Etapa / 7º Ano', idx: 1 },
+                { id: 'E7', nome: '7ª Etapa / 8º Ano', idx: 2 },
+                { id: 'E8', nome: '8ª Etapa / 9º Ano', idx: 3 }
+            ] : 
+            [
+                { id: 'E1', nome: '1ª Etapa / 1ª Série', idx: 0 },
+                { id: 'E2', nome: '2ª Etapa / 2ª Série', idx: 1 },
+                { id: 'E3', nome: '3ª Etapa / 3ª Série', idx: 2 }
+            ];
+
+        const historicoGeral = aluno.historico || {};
+        const notasAluno = aluno.notasEtapasUf || {};
+        const nomeProfLogado = dadosProf.nome || 'Professor';
+        const usrProfLogado = (usuarioLogado || '').toLowerCase();
+        const ehGestao = perfilLogado === 'admin' || perfilLogado === 'diretor';
+
+        listaEtapas.forEach(etapa => {
+            const blocoEtapa = document.createElement('div');
+            blocoEtapa.className = 'card-etapa-bloco';
+
+            let htmlDisciplinas = '';
+
+            listaDisciplinas.forEach(disc => {
+                const ufsOficiais = obterUFsOficiais(aluno.ensino, etapa.nome, disc);
+                const keyDiscEtapa = `${etapa.id}_${disc.replace(/\s+/g, '_')}`;
+                
+                const etapaJaConcluidaGeral = historicoGeral[disc] && historicoGeral[disc][etapa.idx] === true;
+                const pendenciasAnteriores = obterPendenciasEtapaAnterior(historicoGeral, listaDisciplinasTodas, etapa.idx - 1);
+
+                if (pendenciasAnteriores.length > 0) {
+                    let listaPendHtml = pendenciasAnteriores.map(p => `<li>${p}</li>`).join('');
+                    htmlDisciplinas += `
+                        <div class="card-disciplina-uf">
+                            <div class="titulo-disciplina-uf">
+                                <span>📘 ${disc.toUpperCase()}</span>
+                            </div>
+                            <div class="banner-alerta-bloqueio" style="margin:0;">
+                                <strong>⚠️ ETAPA BLOQUEADA (PRÉ-REQUISITO PENDENTE)</strong>
+                                Para liberar o lançamento nesta etapa, o estudante precisa concluir as seguintes disciplinas da etapa anterior:
+                                <ul>${listaPendHtml}</ul>
+                            </div>
+                        </div>
+                    `;
+                    return;
+                }
+
+                let linhasUF = '';
+                let somaTotaisUf = 0;
+                let ufsAprovadasQtd = 0;
+                let ufsLancadasQtd = 0;
+                let ufLiberadaAtual = true;
+
+                ufsOficiais.forEach((ufNome) => {
+                    const ufKey = ufNome.replace(/\s+/g, '');
+                    const dadosUf = (notasAluno[keyDiscEtapa] && notasAluno[keyDiscEtapa][ufKey]) ? 
+                                    notasAluno[keyDiscEtapa][ufKey] : { p70: '', rec70: '', p30: '', rec30: '', total: '' };
+
+                    const metaUf = dadosUf._meta || null;
+                    const profAutorNome = metaUf ? metaUf.professorNome : null;
+                    const profAutorUsr = metaUf ? (metaUf.professorUsr || '').toLowerCase() : null;
+
+                    let ehAutorDestaUf = false;
+                    if (!metaUf) {
+                        ehAutorDestaUf = true;
+                    } else if (ehGestao) {
+                        ehAutorDestaUf = true;
+                    } else if (profAutorUsr && profAutorUsr === usrProfLogado) {
+                        ehAutorDestaUf = true;
+                    } else if (profAutorNome && profAutorNome === nomeProfLogado) {
+                        ehAutorDestaUf = true;
+                    }
+
+                    const p70Val = dadosUf.p70 !== undefined && dadosUf.p70 !== '' ? parseInt(dadosUf.p70, 10) : 0;
+                    const rec70Val = dadosUf.rec70 !== undefined && dadosUf.rec70 !== '' ? parseInt(dadosUf.rec70, 10) : 0;
+                    const p30Val = dadosUf.p30 !== undefined && dadosUf.p30 !== '' ? parseInt(dadosUf.p30, 10) : 0;
+                    const rec30Val = dadosUf.rec30 !== undefined && dadosUf.rec30 !== '' ? parseInt(dadosUf.rec30, 10) : 0;
+
+                    const temAlgumCampo = (dadosUf.p70 !== '' || dadosUf.rec70 !== '' || dadosUf.p30 !== '' || dadosUf.rec30 !== '');
+                    const nota70Final = Math.max(p70Val, rec70Val);
+                    const nota30Final = Math.max(p30Val, rec30Val);
+                    const totalCalculado = temAlgumCampo ? (nota70Final + nota30Final) : null;
+
+                    const ehAprovado = (totalCalculado !== null && totalCalculado >= 60);
+
+                    if (temAlgumCampo) {
+                        ufsLancadasQtd++;
+                        if (totalCalculado !== null) {
+                            somaTotaisUf += totalCalculado;
+                        }
+                    }
+
+                    if (ehAprovado) {
+                        ufsAprovadasQtd++;
+                    }
+
+                    const inputPermitido = ufLiberadaAtual && ehAutorDestaUf;
+                    const desabilitadoAttr = inputPermitido ? '' : 'disabled';
+                    const placeholderTxt = inputPermitido ? '-' : '🔒';
+
+                    let tagAutorHtml = '';
+                    if (metaUf) {
+                        const ehMeu = (profAutorUsr === usrProfLogado || profAutorNome === nomeProfLogado);
+                        tagAutorHtml = `<div class="autor-uf-tag ${ehMeu ? '' : 'outro-prof'}">👤 ${metaUf.professorNome} (${metaUf.dataHora})</div>`;
+                    }
+
+                    let acoesUfHtml = '';
+                    if (ufLiberadaAtual) {
+                        if (ehAutorDestaUf) {
+                            acoesUfHtml = `
+                                <button class="btn-salvar-uf" title="Salvar / Atualizar UF" onclick="salvarUFIndividual('${aluno.cpf}', '${keyDiscEtapa}', '${ufKey}', '${etapa.nome}', '${disc}', ${etapa.idx})">💾</button>
+                                ${metaUf ? `<button class="btn-limpar-uf" title="Apagar lançamento da UF" onclick="limparUFIndividual('${aluno.cpf}', '${keyDiscEtapa}', '${ufKey}', '${etapa.nome}', '${disc}',${etapa.idx})">🗑️</button>` : ''}
+                            `;
+                        } else {
+                            acoesUfHtml = `<span style="font-size:10px; color:#dc3545; font-weight:bold; background:#fff3cd; padding:3px 6px; border-radius:3px; border:1px solid #ffeeba;">🔒 Lançado por ${profAutorNome || 'Outro Prof'}</span>`;
+                        }
+                    } else {
+                        acoesUfHtml = `<span style="font-size:10px; color:#888;">⏳ Bloqueado</span>`;
+                    }
+
+                    let totalExibicao = '-';
+                    let classeBadge = 'media-pendente';
+
+                    if (temAlgumCampo && totalCalculado !== null) {
+                        totalExibicao = totalCalculado;
+                        classeBadge = totalCalculado >= 60 ? 'media-aprovado' : 'media-reprovado';
+                    }
+
+                    linhasUF += `
+                        <tr>
+                            <td style="font-weight:bold; text-align:left;">
+                                ${ufNome} ${!ufLiberadaAtual ? '<small style="color:#dc3545;"><br>(Aguardando UF anterior)</small>' : ''}
+                                ${tagAutorHtml}
+                            </td>
+                            <td><input type="number" step="1" pattern="\\d*" min="0" max="70" id="p70_${keyDiscEtapa}_${ufKey}" value="${dadosUf.p70 !== undefined ? dadosUf.p70 : ''}" ${desabilitadoAttr} oninput="limparInputInteiro(this); calcularTotalUF('${keyDiscEtapa}', '${ufKey}')" placeholder="${placeholderTxt}"></td>
+                            <td><input type="number" step="1" pattern="\\d*" min="0" max="70" id="rec70_${keyDiscEtapa}_${ufKey}" value="${dadosUf.rec70 !== undefined ? dadosUf.rec70 : ''}" ${desabilitadoAttr} oninput="limparInputInteiro(this); calcularTotalUF('${keyDiscEtapa}', '${ufKey}')" placeholder="${placeholderTxt}"></td>
+                            <td><input type="number" step="1" pattern="\\d*" min="0" max="30" id="p30_${keyDiscEtapa}_${ufKey}" value="${dadosUf.p30 !== undefined ? dadosUf.p30 : ''}" ${desabilitadoAttr} oninput="limparInputInteiro(this); calcularTotalUF('${keyDiscEtapa}', '${ufKey}')" placeholder="${placeholderTxt}"></td>
+                            <td><input type="number" step="1" pattern="\\d*" min="0" max="30" id="rec30_${keyDiscEtapa}_${ufKey}" value="${dadosUf.rec30 !== undefined ? dadosUf.rec30 : ''}" ${desabilitadoAttr} oninput="limparInputInteiro(this); calcularTotalUF('${keyDiscEtapa}', '${ufKey}')" placeholder="${placeholderTxt}"></td>
+                            <td>
+                                <span id="badge_${keyDiscEtapa}_${ufKey}" class="badge-media ${classeBadge}">
+                                    ${totalExibicao}
+                                </span>
+                            </td>
+                            <td>${acoesUfHtml}</td>
+                        </tr>
+                    `;
+
+                    ufLiberadaAtual = ehAprovado;
+                });
+
+                let mediaEtapaTxt = '-';
+                let classeMediaEtapa = 'media-pendente';
+                let statusEtapa = 'EM ANDAMENTO (PENDENTE)';
+                let ehConcluidoProf = false;
+
+                if (ufsAprovadasQtd === ufsOficiais.length) {
+                    const mediaCalculada = Math.round(somaTotaisUf / ufsOficiais.length);
+                    mediaEtapaTxt = mediaCalculada;
+                    classeMediaEtapa = 'media-aprovado';
+                    statusEtapa = 'CONCLUÍDO / APROVADO';
+                    ehConcluidoProf = true;
+                } else if (ufsLancadasQtd === ufsOficiais.length) {
+                    const mediaCalculada = Math.round(somaTotaisUf / ufsOficiais.length);
+                    mediaEtapaTxt = mediaCalculada;
+                    if (mediaCalculada >= 60) {
+                        classeMediaEtapa = 'media-aprovado';
+                        statusEtapa = 'CONCLUÍDO / APROVADO';
+                        ehConcluidoProf = true;
+                    } else {
+                        classeMediaEtapa = 'media-reprovado';
+                        statusEtapa = 'EM ANDAMENTO (REPROVADO NA UF)';
+                    }
+                }
+
+                if (etapaJaConcluidaGeral && ufsLancadasQtd === 0) {
+                    htmlDisciplinas += `
+                        <div class="card-disciplina-uf">
+                            <div class="titulo-disciplina-uf">
+                                <span>📘 ${disc.toUpperCase()}</span>
+                            </div>
+                            <div class="banner-etapa-concluida">
+                                <span>✅ ETAPA CONCLUÍDA / HISTÓRICO JÁ LANÇADO PELA SECRETARIA</span>
+                                <span>SITUAÇÃO: <u>APROVADO</u></span>
+                            </div>
+                        </div>
+                    `;
+                    return;
+                }
+
+                let bannerConcluidoProfHtml = '';
+                if (ehConcluidoProf) {
+                    bannerConcluidoProfHtml = `
+                        <div class="banner-etapa-concluida-prof">
+                            <span>✅ ETAPA CONCLUÍDA PELO PROFESSOR (APROVADO)</span>
+                            <span style="font-weight:normal; font-size:11px; background:#fff; padding:2px 8px; border-radius:3px; border:1px solid #b8daff;">✏️ Edição Liberada</span>
+                        </div>
+                    `;
+                }
+
+                htmlDisciplinas += `
+                    <div class="card-disciplina-uf">
+                        <div class="titulo-disciplina-uf">
+                            <span>📘 ${disc.toUpperCase()}</span>
+                        </div>
+
+                        ${bannerConcluidoProfHtml}
+
+                        <table class="tabela-uf">
+                            <thead>
+                                <tr>
+                                    <th style="width:26%; text-align:left;">Unidade Formativa</th>
+                                    <th style="width:13%;">70 PONTOS</th>
+                                    <th style="width:13%;">REC.</th>
+                                    <th style="width:13%;">30 PONTOS</th>
+                                    <th style="width:13%;">REC.</th>
+                                    <th style="width:11%;">TOTAL UF</th>
+                                    <th style="width:11%;">AÇÃO</th>
+                                </tr>
+                            </thead>
+                            <tbody>${linhasUF}</tbody>
+                        </table>
+
+                        <div class="box-fechamento-etapa">
+                            <span>SITUAÇÃO DA ETAPA: <u>${statusEtapa}</u></span>
+                            <span>MÉDIA FINAL DA ETAPA: <span id="mediaEtapa_${keyDiscEtapa}" class="badge-media ${classeMediaEtapa}">${mediaEtapaTxt}</span></span>
+                        </div>
+                    </div>
+                `;
+            });
+
+            blocoEtapa.innerHTML = `
+                <div class="header-etapa-bloco">
+                    <span>📌 ${etapa.nome.toUpperCase()}</span>
+                </div>
+                <div>${htmlDisciplinas}</div>
+            `;
+
+            container.appendChild(blocoEtapa);
+        });
+    }
+
+    function limparInputInteiro(input) {
+        input.value = input.value.replace(/[^0-9]/g, '');
+    }
+
+    function calcularTotalUF(keyDiscEtapa, ufKey) {
+        const p70Input = document.getElementById(`p70_${keyDiscEtapa}_${ufKey}`);
+        const rec70Input = document.getElementById(`rec70_${keyDiscEtapa}_${ufKey}`);
+        const p30Input = document.getElementById(`p30_${keyDiscEtapa}_${ufKey}`);
+        const rec30Input = document.getElementById(`rec30_${keyDiscEtapa}_${ufKey}`);
+
+        if (!p70Input || p70Input.disabled) return;
+
+        const valP70 = p70Input.value.trim();
+        const valRec70 = rec70Input.value.trim();
+        const valP30 = p30Input.value.trim();
+        const valRec30 = rec30Input.value.trim();
+
+        const badge = document.getElementById(`badge_${keyDiscEtapa}_${ufKey}`);
+
+        if (valP70 !== '' || valRec70 !== '' || valP30 !== '' || valRec30 !== '') {
+            const p70 = parseInt(valP70, 10) || 0;
+            const rec70 = parseInt(valRec70, 10) || 0;
+            const p30 = parseInt(valP30, 10) || 0;
+            const rec30 = parseInt(valRec30, 10) || 0;
+
+            const nota70Final = Math.max(p70, rec70);
+            const nota30Final = Math.max(p30, rec30);
+            const total = nota70Final + nota30Final;
+
+            badge.innerText = total;
+            badge.className = 'badge-media ' + (total >= 60 ? 'media-aprovado' : 'media-reprovado');
+        } else {
+            badge.innerText = '-';
+            badge.className = 'badge-media media-pendente';
+        }
+    }
+
+    function salvarUFIndividual(cpf, keyDiscEtapa, ufKey, etapaNome, disciplina, idxEtapa) {
+        let todosAlunos = JSON.parse(localStorage.getItem('cadastroAlunos')) || [];
+        const index = todosAlunos.findIndex(a => a.cpf === cpf);
+
+        if (index !== -1) {
+            if (!todosAlunos[index].notasEtapasUf) todosAlunos[index].notasEtapasUf = {};
+            if (!todosAlunos[index].notasEtapasUf[keyDiscEtapa]) todosAlunos[index].notasEtapasUf[keyDiscEtapa] = {};
+            if (!todosAlunos[index].historico) todosAlunos[index].historico = {};
+            if (!todosAlunos[index].historico[disciplina]) todosAlunos[index].historico[disciplina] = [false, false, false, false];
+
+            const ufExistente = todosAlunos[index].notasEtapasUf[keyDiscEtapa][ufKey];
+            const nomeProfLogado = dadosProf.nome || 'Professor';
+            const usrProfLogado = (usuarioLogado || '').toLowerCase();
+            const ehGestao = perfilLogado === 'admin' || perfilLogado === 'diretor';
+
+            if (ufExistente && ufExistente._meta && !ehGestao) {
+                const autorUsr = (ufExistente._meta.professorUsr || '').toLowerCase();
+                const autorNome = ufExistente._meta.professorNome;
+                if (autorUsr !== usrProfLogado && autorNome !== nomeProfLogado) {
+                    alert(`⚠️ Acesso Negado! Esta UF foi lançada pelo professor ${autorNome} e não pode ser alterada por outro docente.`);
+                    return;
+                }
+            }
+
+            const p70Elem = document.getElementById(`p70_${keyDiscEtapa}_${ufKey}`);
+            if (!p70Elem) return;
+
+            const p70 = p70Elem.value.replace(/[^0-9]/g, '');
+            const rec70 = document.getElementById(`rec70_${keyDiscEtapa}_${ufKey}`).value.replace(/[^0-9]/g, '');
+            const p30 = document.getElementById(`p30_${keyDiscEtapa}_${ufKey}`).value.replace(/[^0-9]/g, '');
+            const rec30 = document.getElementById(`rec30_${keyDiscEtapa}_${ufKey}`).value.replace(/[^0-9]/g, '');
+
+            if (p70 === '' && rec70 === '' && p30 === '' && rec30 === '') {
+                alert("Preencha ao menos uma nota antes de salvar a Unidade Formativa.");
+                return;
+            }
+
+            const p70Num = parseInt(p70, 10) || 0;
+            const rec70Num = parseInt(rec70, 10) || 0;
+            const p30Num = parseInt(p30, 10) || 0;
+            const rec30Num = parseInt(rec30, 10) || 0;
+
+            const nota70 = Math.max(p70Num, rec70Num);
+            const nota30 = Math.max(p30Num, rec30Num);
+            const totalCalc = nota70 + nota30;
+
+            const agora = new Date();
+            const dataIso = agora.toISOString().split('T')[0];
+            const horaFmt = agora.toTimeString().substring(0, 5);
+            const dataHoraFmt = `${agora.toLocaleDateString('pt-BR')} às ${horaFmt}`;
+
+            todosAlunos[index].notasEtapasUf[keyDiscEtapa][ufKey] = {
+                p70, rec70, p30, rec30,
+                total: totalCalc,
+                _meta: {
+                    professorNome: nomeProfLogado,
+                    professorUsr: usrProfLogado,
+                    dataHora: dataHoraFmt,
+                    dataIso: dataIso,
+                    hora: horaFmt,
+                    timestamp: agora.getTime()
+                }
+            };
+
+            const ufsOficiais = obterUFsOficiais(todosAlunos[index].ensino, etapaNome, disciplina);
+            let ufsAprovadasCount = 0;
+
+            ufsOficiais.forEach(u => {
+                const uK = u.replace(/\s+/g, '');
+                const dadosU = todosAlunos[index].notasEtapasUf[keyDiscEtapa][uK];
+                if (dadosU && dadosU.total !== undefined && dadosU.total !== '' && parseInt(dadosU.total, 10) >= 60) {
+                    ufsAprovadasCount++;
+                }
+            });
+
+            if (ufsAprovadasCount === ufsOficiais.length) {
+                todosAlunos[index].historico[disciplina][idxEtapa] = true;
+            } else {
+                todosAlunos[index].historico[disciplina][idxEtapa] = false;
+            }
+
+            localStorage.setItem('cadastroAlunos', JSON.stringify(todosAlunos));
+            alunoSelecionado = todosAlunos[index];
+
+            const msg = document.getElementById('msgNotaSucesso');
+            msg.style.display = 'block';
+            setTimeout(() => { msg.style.display = 'none'; }, 2000);
+
+            carregarFormularioEtapasEUnidades(todosAlunos[index], dadosProf.disciplinas || (todosAlunos[index].ensino === 'Fundamental' ? disciplinasFundamental : disciplinasMedio));
+        }
+    }
+
+    function limparUFIndividual(cpf, keyDiscEtapa, ufKey, etapaNome, disciplina, idxEtapa) {
+        let todosAlunos = JSON.parse(localStorage.getItem('cadastroAlunos')) || [];
+        const index = todosAlunos.findIndex(a => a.cpf === cpf);
+
+        if (index !== -1) {
+            const ufExistente = (todosAlunos[index].notasEtapasUf && todosAlunos[index].notasEtapasUf[keyDiscEtapa]) ? 
+                                todosAlunos[index].notasEtapasUf[keyDiscEtapa][ufKey] : null;
+            
+            const nomeProfLogado = dadosProf.nome || 'Professor';
+            const usrProfLogado = (usuarioLogado || '').toLowerCase();
+            const ehGestao = perfilLogado === 'admin' || perfilLogado === 'diretor';
+
+            if (ufExistente && ufExistente._meta && !ehGestao) {
+                const autorUsr = (ufExistente._meta.professorUsr || '').toLowerCase();
+                const autorNome = ufExistente._meta.professorNome;
+                if (autorUsr !== usrProfLogado && autorNome !== nomeProfLogado) {
+                    alert(`⚠️ Acesso Negado! Você não pode apagar uma UF lançada pelo professor ${autorNome}.`);
+                    return;
+                }
+            }
+
+            if (!confirm("Deseja realmente apagar o lançamento desta UF?")) return;
+
+            if (todosAlunos[index].notasEtapasUf && todosAlunos[index].notasEtapasUf[keyDiscEtapa]) {
+                delete todosAlunos[index].notasEtapasUf[keyDiscEtapa][ufKey];
+            }
+
+            if (todosAlunos[index].historico && todosAlunos[index].historico[disciplina]) {
+                todosAlunos[index].historico[disciplina][idxEtapa] = false;
+            }
+
+            localStorage.setItem('cadastroAlunos', JSON.stringify(todosAlunos));
+            alunoSelecionado = todosAlunos[index];
+
+            carregarFormularioEtapasEUnidades(todosAlunos[index], dadosProf.disciplinas || (todosAlunos[index].ensino === 'Fundamental' ? disciplinasFundamental : disciplinasMedio));
+        }
+    }
+
+    function salvarPresenca(e) {
+        e.preventDefault();
+        if (!alunoSelecionado) return;
+
+        const disc = document.getElementById('selectDiscPresenca').value;
+        const profNome = document.getElementById('campoNomeProfessorPres').value;
+        const data = document.getElementById('dataPresenca').value;
+        const hora = document.getElementById('horaPresenca').value;
+
+        let presencas = JSON.parse(localStorage.getItem('registrosPresenca')) || [];
+        presencas.push({
+            id: Date.now(),
+            cpfAluno: alunoSelecionado.cpf,
+            nomeAluno: alunoSelecionado.nome,
+            disciplina: disc,
+            professor: profNome,
+            data: data,
+            hora: hora,
+            horario: hora,
+            usuarioProf: (usuarioLogado || '').toLowerCase()
+        });
+
+        localStorage.setItem('registrosPresenca', JSON.stringify(presencas));
+
+        const msg = document.getElementById('msgPresencaSucesso');
+        msg.style.display = 'block';
+        setTimeout(() => { msg.style.display = 'none'; }, 2500);
+    }
+
+    function carregarMinhasPresencasProf() {
+        const presencas = JSON.parse(localStorage.getItem('registrosPresenca')) || [];
+        const termoFiltro = document.getElementById('filtroMinhasPres').value.toLowerCase().trim();
+        const usrAtual = (usuarioLogado || '').toLowerCase();
+        
+        const minhasPresencas = presencas.filter(p => {
+            const ehAutor = (p.usuarioProf && p.usuarioProf === usrAtual) || (p.professor === dadosProf.nome);
+            const matchNome = (p.nomeAluno || '').toLowerCase().includes(termoFiltro);
+            return ehAutor && matchNome;
+        });
+
+        const tbody = document.getElementById('tabelaMinhasPresencasProf');
+        tbody.innerHTML = '';
+
+        if (minhasPresencas.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:#888;">Nenhuma presença registrada por você até o momento.</td></tr>';
+            return;
+        }
+
+        minhasPresencas.sort((a,b) => new Date(`${b.data}T${b.hora || b.horario || '00:00'}`) - new Date(`${a.data}T${a.hora || a.horario || '00:00'}`));
+
+        minhasPresencas.forEach(p => {
+            const dataFmt = p.data ? p.data.split('-').reverse().join('/') : '-';
+            const horaFmt = p.hora || p.horario || '--:--';
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><strong>${dataFmt} às ${horaFmt}</strong></td>
+                <td>${p.nomeAluno.toUpperCase()}</td>
+                <td>${p.cpfAluno}</td>
+                <td>${p.disciplina}</td>
+                <td><button class="btn-excluir-presenca" onclick="excluirMinhaPresenca(${p.id})">🗑️ Excluir</button></td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    function excluirMinhaPresenca(idPresenca) {
+        if (confirm("Tem certeza que deseja excluir esta presença registrada por você?")) {
+            let presencas = JSON.parse(localStorage.getItem('registrosPresenca')) || [];
+            presencas = presencas.filter(p => p.id !== idPresenca);
+            localStorage.setItem('registrosPresenca', JSON.stringify(presencas));
+            carregarMinhasPresencasProf();
+        }
+    }
+
+    function carregarHistoricoGeralAluno() {
+        if (!alunoSelecionado) return;
+
+        let todosEventos = [];
+
+        const presencas = JSON.parse(localStorage.getItem('registrosPresenca')) || [];
+        const presencasAluno = presencas.filter(p => p.cpfAluno === alunoSelecionado.cpf);
+
+        presencasAluno.forEach(p => {
+            let dt = p.data ? p.data.split('-').reverse().join('/') : '-';
+            let hr = p.hora || p.horario || '--:--';
+            let tstamp = new Date(`${p.data}T${p.hora || p.horario || '00:00'}`).getTime() || 0;
+
+            todosEventos.push({
+                timestamp: tstamp,
+                dataHora: `${dt} às ${hr}`,
+                tipo: 'PRESENÇA',
+                detalhes: `Atendimento / Frequência na disciplina: <strong>${p.disciplina}</strong>`,
+                professor: p.professor || 'Professor'
+            });
+        });
+
+        const todosAlunos = JSON.parse(localStorage.getItem('cadastroAlunos')) || [];
+        const alunoAtualizado = todosAlunos.find(a => a.cpf === alunoSelecionado.cpf) || alunoSelecionado;
+        const notasAluno = alunoAtualizado.notasEtapasUf || {};
+
+        Object.keys(notasAluno).forEach(keyDiscEtapa => {
+            const partes = keyDiscEtapa.split('_');
+            const etapaCodigo = partes[0];
+            const nomeDisciplina = partes.slice(1).join(' ');
+
+            Object.keys(notasAluno[keyDiscEtapa]).forEach(ufKey => {
+                const ufDados = notasAluno[keyDiscEtapa][ufKey];
+                if (ufDados && ufDados._meta) {
+                    const meta = ufDados._meta;
+                    const totalUF = ufDados.total !== undefined && ufDados.total !== '' ? ufDados.total : 'Pendente';
+                    const aprovadoStatus = (totalUF !== 'Pendente' && parseInt(totalUF, 10) >= 60) ? '🟢 Aprovado' : '🔴 Em andamento / Reprovado';
+
+                    todosEventos.push({
+                        timestamp: meta.timestamp || 0,
+                        dataHora: meta.dataHora || 'Data não registrada',
+                        tipo: 'AVALIAÇÃO UF',
+                        detalhes: `<strong>${nomeDisciplina} (${etapaCodigo})</strong> - Lançamento da <strong>${ufKey}</strong> | Nota: <strong>${totalUF} pts</strong> (${aprovadoStatus})`,
+                        professor: meta.professorNome || 'Professor'
+                    });
+                }
+            });
+        });
+
+        todosEventos.sort((a, b) => b.timestamp - a.timestamp);
+
+        const tbody = document.getElementById('tabelaHistoricoGeralAluno');
+        tbody.innerHTML = '';
+
+        if (todosEventos.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:#888;">Nenhuma presença ou avaliação de unidade registrada para este estudante.</td></tr>';
+            return;
+        }
+
+        todosEventos.forEach(ev => {
+            const tr = document.createElement('tr');
+            const classeTag = ev.tipo === 'PRESENÇA' ? 'tag-tipo-presenca' : 'tag-tipo-avaliacao';
+            const icone = ev.tipo === 'PRESENÇA' ? '📋' : '📝';
+
+            tr.innerHTML = `
+                <td><strong>${ev.dataHora}</strong></td>
+                <td><span class="tag-tipo-evento ${classeTag}">${icone} ${ev.tipo}</span></td>
+                <td>${ev.detalhes}</td>
+                <td>${ev.professor}</td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    function abrirModalSenha() { document.getElementById('modalSenha').style.display = 'flex'; }
+    function fecharModalSenha() {
+        document.getElementById('modalSenha').style.display = 'none';
+        document.getElementById('formAlterarSenha').reset();
+        document.getElementById('msgSucessoSenha').style.display = 'none';
+        document.getElementById('msgErroSenha').style.display = 'none';
+    }
+
+    function alterarMinhaSenha(e) {
+        e.preventDefault();
+        const senhaAtual = document.getElementById('senhaAtual').value;
+        const novaSenha = document.getElementById('novaSenha').value;
+
+        let funcionarios = JSON.parse(localStorage.getItem('funcionariosCadastrados')) || [];
+        const usrAtual = (usuarioLogado || '').toLowerCase();
+        const idx = funcionarios.findIndex(f => f.usuario.toLowerCase() === usrAtual);
+
+        if (idx !== -1 && funcionarios[idx].senha === senhaAtual) {
+            funcionarios[idx].senha = novaSenha;
+            localStorage.setItem('funcionariosCadastrados', JSON.stringify(funcionarios));
+            sessionStorage.setItem('dadosProfessorLogado', JSON.stringify(funcionarios[idx]));
+
+            document.getElementById('msgSucessoSenha').style.display = 'block';
+            document.getElementById('msgErroSenha').style.display = 'none';
+            document.getElementById('formAlterarSenha').reset();
+
+            setTimeout(() => { fecharModalSenha(); }, 1800);
+        } else {
+            document.getElementById('msgErroSenha').style.display = 'block';
+            document.getElementById('msgSucessoSenha').style.display = 'none';
+        }
+    }
+
+    function fazerLogout() {
+        sessionStorage.clear();
+        window.location.href = 'index.html'; // Atualizado para index.html
+    }
+
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.busca-container')) {
+            const resGlobal = document.getElementById('resultadoBuscaGlobal');
+            if (resGlobal) resGlobal.style.display = 'none';
+        }
+    });
+
+    window.onclick = function(event) {
+        const modal = document.getElementById('modalSenha');
+        if (event.target === modal) { fecharModalSenha(); }
+    }
+</script>
+</body>
+</html>

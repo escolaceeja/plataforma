@@ -1,0 +1,1293 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestão Administrativa e Relatórios - CEEJA Linhares</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background: #f0f2f5; padding: 20px; color: #333; }
+        .container { max-width: 1150px; margin: 0 auto; }
+        .card { background: white; padding: 25px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); margin-bottom: 20px; }
+        
+        .header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+        .header h1 { color: #003366; font-size: 22px; }
+        
+        .controles-topo { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+        .btn-senha-discreto { background: transparent; border: 1px solid #ced4da; color: #555; padding: 8px 14px; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+        .btn-senha-discreto:hover { background: #e9ecef; color: #333; }
+        .btn-logout { background: #dc3545; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 13px; }
+        .btn-logout:hover { background: #c82333; }
+
+        .abas-gestao { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid #dee2e6; padding-bottom: 10px; flex-wrap: wrap; }
+        .btn-aba { background: #e9ecef; border: none; padding: 10px 18px; border-radius: 6px; font-weight: bold; cursor: pointer; color: #495057; font-size: 14px; }
+        .btn-aba.ativo { background: #003366; color: white; }
+
+        .secao-painel { display: none; }
+        .secao-painel.ativo { display: block; }
+
+        .grid-estatisticas { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 15px; margin-bottom: 20px; }
+        .card-stat { background: #f8f9fa; border-left: 5px solid #003366; padding: 15px; border-radius: 6px; box-shadow: 0 2px 5px rgba(0,0,0,0.03); }
+        .card-stat h4 { font-size: 12px; color: #666; text-transform: uppercase; margin-bottom: 5px; }
+        .card-stat .valor { font-size: 22px; font-weight: bold; color: #003366; }
+
+        .filtro-box { background: #f8f9fa; border: 1px solid #ced4da; padding: 15px; border-radius: 8px; margin-bottom: 15px; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; align-items: flex-end; }
+        .grupo-filtro { display: flex; flex-direction: column; gap: 5px; }
+        .grupo-filtro label { font-size: 12px; font-weight: bold; color: #444; }
+        .grupo-filtro input, .grupo-filtro select { padding: 8px; border: 1px solid #ccc; border-radius: 5px; font-size: 13px; }
+        
+        .botoes-acao-linha { display: flex; gap: 10px; margin-top: 15px; margin-bottom: 15px; flex-wrap: wrap; align-items: center; }
+        .btn-acao { background: #28a745; color: white; border: none; padding: 10px 18px; border-radius: 5px; font-weight: bold; cursor: pointer; font-size: 14px; display: flex; align-items: center; gap: 6px; }
+        .btn-acao:hover { background: #218838; }
+        .btn-limpar { background: #6c757d; color: white; border: none; padding: 10px 18px; border-radius: 5px; font-weight: bold; cursor: pointer; font-size: 14px; display: flex; align-items: center; gap: 6px; }
+        .btn-limpar:hover { background: #5a6268; }
+        .btn-imprimir { background: #17a2b8; color: white; border: none; padding: 10px 16px; border-radius: 5px; font-weight: bold; cursor: pointer; font-size: 13px; display: flex; align-items: center; gap: 6px; }
+        .btn-imprimir:hover { background: #138496; }
+
+        .bloco-relatorio-especifico { display: none; background: #fff; border: 1px solid #e0e0e0; border-radius: 8px; padding: 20px; margin-top: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
+        .bloco-relatorio-especifico h4 { font-size: 16px; color: #003366; margin-bottom: 15px; border-bottom: 2px solid #f0f2f5; padding-bottom: 8px; }
+
+        .form-cadastro-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px; }
+        .form-group { display: flex; flex-direction: column; gap: 5px; }
+        .form-group label { font-weight: 600; font-size: 13px; color: #555; }
+        .form-group input, .form-group select { padding: 10px; border: 1px solid #ccc; border-radius: 5px; font-size: 14px; }
+        
+        .box-selecao-disciplinas { background: #f8f9fa; border: 1px solid #ced4da; border-radius: 6px; padding: 15px; margin-top: 10px; display: none; grid-column: 1 / -1; }
+        .box-selecao-disciplinas label.titulo-box { font-size: 13px; font-weight: bold; color: #003366; margin-bottom: 10px; display: block; }
+        .grid-disciplinas-check { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px; }
+        .item-check-disc { background: white; border: 1px solid #ddd; padding: 8px 10px; border-radius: 5px; font-size: 12px; font-weight: 600; display: flex; align-items: center; gap: 8px; cursor: pointer; }
+        .item-check-disc input { cursor: pointer; width: 16px; height: 16px; }
+
+        .btn-salvar-user { background: #28a745; color: white; border: none; padding: 12px; border-radius: 5px; font-weight: bold; cursor: pointer; grid-column: 1 / -1; font-size: 15px; margin-top: 10px; }
+        .btn-salvar-user:hover { background: #218838; }
+
+        .table-responsive { overflow-x: auto; margin-top: 15px; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; font-size: 13px; }
+        th { background: #003366; color: white; }
+        .acoes-celula { display: flex; gap: 6px; flex-wrap: wrap; }
+        .btn-deletar { background: #dc3545; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 12px; }
+        .btn-reset-senha { background: #ffc107; color: #212529; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 12px; }
+        .btn-reset-senha:hover { background: #e0a800; }
+        
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.4); justify-content: center; align-items: center; }
+        .modal-conteudo { background: white; padding: 25px; border-radius: 10px; width: 90%; max-width: 380px; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 8px; }
+        .modal-header h3 { font-size: 16px; color: #003366; }
+        .fechar-modal { cursor: pointer; font-size: 20px; color: #888; font-weight: bold; }
+        .form-group-modal { margin-bottom: 12px; }
+        .form-group-modal label { display: block; font-size: 12px; font-weight: 600; color: #555; margin-bottom: 4px; }
+        .form-group-modal input { width: 100%; padding: 9px; border: 1px solid #ccc; border-radius: 5px; font-size: 13px; }
+        .btn-salvar-senha-modal { width: 100%; background: #003366; color: white; border: none; padding: 10px; border-radius: 5px; font-weight: bold; cursor: pointer; font-size: 13px; margin-top: 8px; }
+
+        .msg-sucesso { background: #d4edda; color: #155724; padding: 10px; border-radius: 5px; margin-top: 10px; display: none; text-align: center; font-weight: bold; font-size: 13px; }
+        .msg-erro { background: #f8d7da; color: #721c24; padding: 10px; border-radius: 5px; margin-top: 10px; display: none; text-align: center; font-weight: bold; font-size: 13px; }
+
+        @media print {
+            body { background: white; padding: 0; }
+            .container { max-width: 100%; }
+            .card, .controles-topo, .abas-gestao, .filtro-box, .botoes-acao-linha, .acoes-celula, button { display: none !important; }
+            .secao-painel { display: block !important; }
+            .bloco-relatorio-especifico { border: none !important; box-shadow: none !important; margin-top: 0 !important; padding: 0 !important; }
+            .bloco-relatorio-especifico:not([style*="display: block"]) { display: none !important; }
+            table { border-collapse: collapse; width: 100%; }
+            th, td { border: 1px solid #000; color: #000; padding: 8px; font-size: 12px; }
+            th { background: #ddd !important; -webkit-print-color-adjust: exact; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="card">
+        <div class="header">
+            <h1 id="tituloPainel">🏛️ Gestão Administrativa e Relatórios - CEEJA Linhares</h1>
+            <div class="controles-topo">
+                <button class="btn-senha-discreto" id="btnAbrirModalSenha">🔒 Alterar Senha</button>
+                <button class="btn-logout" id="btnLogout">Sair 🚪</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="abas-gestao">
+        <button class="btn-aba ativo" data-aba="relatorios">📊 Relatórios, Atendimentos e Estatísticas</button>
+        <button class="btn-aba" data-aba="equipe">👥 Gestão de Equipe e Acessos</button>
+        <button class="btn-aba" data-aba="alunos">🎓 Visão Geral de Alunos</button>
+    </div>
+
+    <div id="secao-relatorios" class="secao-painel ativo">
+        <div class="card">
+            <h3>📈 Indicadores Gerais do CEEJA</h3>
+            <div class="grid-estatisticas" style="margin-top: 15px;">
+                <div class="card-stat">
+                    <h4>Total de Alunos Matriculados</h4>
+                    <div class="valor" id="statTotalAlunos">0</div>
+                </div>
+                <div class="card-stat">
+                    <h4>Atendimentos Filtrados</h4>
+                    <div class="valor" id="statTotalAtendimentos">0</div>
+                </div>
+                <div class="card-stat">
+                    <h4>Funcionários Ativos</h4>
+                    <div class="valor" id="statTotalFuncionarios">0</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>🔍 Filtro e Seleção Restrita de Relatório</h3>
+            <p style="font-size: 13px; color: #666; margin-top: 4px;">Selecione o tipo de relatório desejado para exibir e imprimir unicamente o que foi pedido.</p>
+            
+            <div class="filtro-box">
+                <div class="grupo-filtro" style="grid-column: 1 / -1;">
+                    <label>Tipo de Relatório Desejado (Restrição de Exibição):</label>
+                    <select id="tipoRelatorioDesejado">
+                        <option value="" disabled selected>-- SELECIONE O RELATÓRIO --</option>
+                        <optgroup label="Relatórios de Atendimento">
+                            <option value="professor">👨‍🏫 Atendimentos por Professor</option>
+                            <option value="disciplina">📚 Atendimentos por Disciplina</option>
+                            <option value="horario">⏰ Horários de Maior Atendimento (Pico)</option>
+                            <option value="detalhado">📋 Relação Detalhada de Atendimentos</option>
+                        </optgroup>
+                        <optgroup label="Novos Relatórios de Conclusões e Etapas por Disciplina">
+                            <option value="conclusoes_disciplina_periodo">📊 Qtd de Conclusões Totais no Período por Disciplina</option>
+                            <option value="etapas_disciplina_periodo">📑 Qtd de Etapas Concluídas no Período por Disciplina</option>
+                        </optgroup>
+                        <optgroup label="Outros Relatórios de Alunos (Por Período)">
+                            <option value="matriculados_nivel">🏫 Alunos Matriculados por Nível (Fundamental vs Médio)</option>
+                            <option value="concluiu_etapas">✅ Alunos que Concluíram Etapas (Lançamentos de Professores)</option>
+                            <option value="concluiu_tudo">🏆 Alunos que Concluíram Tudo / Formandos (Lançamentos de Professores)</option>
+                            <option value="busca_ativa">🚨 Relatório de Busca Ativa (Inatividade > 15 dias)</option>
+                        </optgroup>
+                    </select>
+                </div>
+                <div class="grupo-filtro">
+                    <label>Data Inicial:</label>
+                    <input type="date" id="filtroDataInicio">
+                </div>
+                <div class="grupo-filtro">
+                    <label>Data Final:</label>
+                    <input type="date" id="filtroDataFim">
+                </div>
+                <div class="grupo-filtro">
+                    <label>Filtrar por Disciplina:</label>
+                    <select id="filtroFiltroDisciplina">
+                        <option value="">Todas as Disciplinas</option>
+                    </select>
+                </div>
+                <div class="grupo-filtro">
+                    <label>Filtrar por Professor:</label>
+                    <select id="filtroFiltroProfessor">
+                        <option value="">Todos os Professores</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="botoes-acao-linha">
+                <button class="btn-acao" id="btnAplicarFiltros">
+                    🔍 Exibir Relatório Selecionado
+                </button>
+                <button class="btn-imprimir" id="btnImprimirRelatorio">
+                    🖨️ Imprimir Relatório Exibido
+                </button>
+                <button class="btn-limpar" id="btnLimparFiltros">
+                    🔄 Limpar Filtros
+                </button>
+            </div>
+        </div>
+
+        <div class="bloco-relatorio-especifico" id="blocoRelatorioProfessor">
+            <h4>👨‍🏫 Relatório Restrito: Atendimentos por Professor</h4>
+            <div class="table-responsive" style="margin-top:0;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Professor / Responsável</th>
+                            <th style="text-align:center;">Total de Atendimentos</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabelaResumoProfessor"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="bloco-relatorio-especifico" id="blocoRelatorioDisciplina">
+            <h4>📚 Relatório Restrito: Atendimentos por Disciplina</h4>
+            <div class="table-responsive" style="margin-top:0;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Disciplina / Matéria</th>
+                            <th style="text-align:center;">Total de Atendimentos</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabelaResumoDisciplina"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="bloco-relatorio-especifico" id="blocoRelatorioHorario">
+            <h4>⏰ Relatório Restrito: Horários de Maior Atendimento (Pico)</h4>
+            <div class="table-responsive" style="margin-top:0;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Faixa Horária</th>
+                            <th style="text-align:center;">Total de Atendimentos</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabelaResumoHorarios"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="bloco-relatorio-especifico" id="blocoRelatorioDetalhado">
+            <h4>📋 Relatório Restrito: Relação Detalhada de Atendimentos</h4>
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Data</th>
+                            <th>Horário</th>
+                            <th>Aluno</th>
+                            <th>CPF do Aluno</th>
+                            <th>Disciplina / Matéria</th>
+                            <th>Professor / Responsável</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabelaRelatorioAtendimentos"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="bloco-relatorio-especifico" id="blocoRelatorioConclusoesDisciplinaPeriodo">
+            <h4>📊 Relatório Restrito: Quantidade de Conclusões Totais no Período por Disciplina</h4>
+            <div class="table-responsive" style="margin-top:0;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Disciplina / Componente Curricular</th>
+                            <th style="text-align:center;">Quantidade Total de Conclusões no Período</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabelaConclusoesDisciplinaPeriodo"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="bloco-relatorio-especifico" id="blocoRelatorioEtapasDisciplinaPeriodo">
+            <h4>📑 Relatório Restrito: Quantidade de Etapas Concluídas no Período por Disciplina</h4>
+            <div class="table-responsive" style="margin-top:0;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Disciplina / Componente Curricular</th>
+                            <th style="text-align:center;">Quantidade de Etapas Concluídas no Período</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabelaEtapasDisciplinaPeriodo"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="bloco-relatorio-especifico" id="blocoRelatorioMatriculadosNivel">
+            <h4>🏫 Relatório Restrito: Alunos Matriculados por Nível de Ensino</h4>
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Nível de Ensino</th>
+                            <th style="text-align:center;">Total de Alunos Matriculados</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabelaMatriculadosNivel"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="bloco-relatorio-especifico" id="blocoRelatorioConcluiuEtapas">
+            <h4>✅ Relatório Restrito: Alunos que Concluíram Etapas (Validação Docente no Período)</h4>
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Nome do Aluno</th>
+                            <th>Ensino</th>
+                            <th>Disciplina / Componente</th>
+                            <th>Professor Responsável</th>
+                            <th style="text-align:center;">Qtd Etapas Concluídas no Período</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabelaConcluiuEtapas"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="bloco-relatorio-especifico" id="blocoRelatorioConcluiuTudo">
+            <h4>🏆 Relatório Restrito: Alunos que Concluíram Tudo / Formandos no Período</h4>
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Nome do Aluno</th>
+                            <th>Matrícula</th>
+                            <th>CPF</th>
+                            <th>Ensino</th>
+                            <th>Data da Conclusão Final</th>
+                            <th style="text-align:center;">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabelaConcluiuTudo"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="bloco-relatorio-especifico" id="blocoRelatorioBuscaAtiva">
+            <h4>🚨 Relatório Restrito: Busca Ativa (Inatividade > 15 dias sem atendimento)</h4>
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Nome do Aluno</th>
+                            <th>Matrícula</th>
+                            <th>Telefone</th>
+                            <th>Ensino</th>
+                            <th style="text-align:center;">Dias Sem Atendimento</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabelaBuscaAtiva"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="secao-equipe" class="secao-painel">
+        <div class="card" id="secaoCriarAcesso">
+            <h3>➕ Cadastrar Novo Funcionário / Professor</h3>
+            <p style="font-size: 13px; color: #666; margin-top: 4px;">A senha padrão inicial do colaborador será o CPF (somente números).</p>
+            
+            <form id="formNovoAcesso">
+                <div class="form-cadastro-grid">
+                    <div class="form-group">
+                        <label for="novoNome">Nome Completo</label>
+                        <input type="text" id="novoNome" placeholder="Ex: Maria das Dores" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="novoCpf">CPF (Login de acesso)</label>
+                        <input type="text" id="novoCpf" placeholder="000.000.000-00" maxlength="14" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="novoTelefone">Telefone / WhatsApp</label>
+                        <input type="text" id="novoTelefone" placeholder="(27) 99999-9999" maxlength="15" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="novoPerfil">Perfil de Acesso</label>
+                        <select id="novoPerfil" required>
+                            <option value="professor">Professor</option>
+                            <option value="secretaria">Secretaria</option>
+                            <option value="pedagogo">Pedagogo</option>
+                            <option value="diretor">Diretor</option>
+                            <option value="admin">Administrador</option>
+                        </select>
+                    </div>
+
+                    <div id="grupoDiscProf" class="box-selecao-disciplinas">
+                        <label class="titulo-box">📘 Selecione a(s) Disciplina(s) Atribuída(s):</label>
+                        <div class="grid-disciplinas-check" id="containerCheckboxesDisciplinas"></div>
+                    </div>
+
+                    <button type="submit" class="btn-salvar-user">➕ Cadastrar Funcionário</button>
+                </div>
+                <div id="msgSucesso" class="msg-sucesso">Funcionário cadastrado com sucesso!</div>
+                <div id="msgErro" class="msg-erro">Aviso: Este CPF já está cadastrado no sistema!</div>
+            </form>
+        </div>
+
+        <div class="card">
+            <h3>👥 Equipe Cadastrada</h3>
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Nome</th>
+                            <th>CPF (Usuário)</th>
+                            <th>Telefone</th>
+                            <th>Perfil</th>
+                            <th>Disciplinas</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabelaFuncionarios"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="secao-alunos" class="secao-painel">
+        <div class="card">
+            <h3>🎓 Relação Geral de Alunos da Escola</h3>
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Nome do Aluno</th>
+                            <th>Matrícula</th>
+                            <th>CPF</th>
+                            <th>Ensino</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabelaAlunosGeral"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="modalSenha" class="modal">
+    <div class="modal-conteudo">
+        <div class="modal-header">
+            <h3>Alterar Minha Senha</h3>
+            <span class="fechar-modal" id="btnFecharModalSenha">&times;</span>
+        </div>
+        <form id="formAlterarSenha">
+            <div class="form-group-modal">
+                <label for="senhaAtual">Senha Atual</label>
+                <input type="password" id="senhaAtual" placeholder="Digite sua senha atual" required>
+            </div>
+            <div class="form-group-modal">
+                <label for="novaSenhaAdmin">Nova Senha</label>
+                <input type="password" id="novaSenhaAdmin" placeholder="Digite a nova senha" required>
+            </div>
+            <button type="submit" class="btn-salvar-senha-modal">Atualizar Senha</button>
+            <div id="msgSucessoSenha" class="msg-sucesso">Senha alterada com sucesso!</div>
+            <div id="msgErroSenha" class="msg-erro">Senha atual incorreta!</div>
+        </form>
+    </div>
+</div>
+
+<!-- CONFIGURAÇÃO DO FIREBASE (NÚCLEO) -->
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getFirestore, collection, getDocs, setDoc, doc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyAYa8tTEJ4raHcdpdBdDnFIZlF7y2LjTX8",
+        authDomain: "ceeja-linhares-sistema.firebaseapp.com",
+        projectId: "ceeja-linhares-sistema",
+        storageBucket: "ceeja-linhares-sistema.firebasestorage.app",
+        messagingSenderId: "791087995006",
+        appId: "1:791087995006:web:14c93bc02b36c73aa8602f"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    const perfilLogado = sessionStorage.getItem('perfilLogado');
+    const usuarioLogado = sessionStorage.getItem('usuarioLogado');
+
+    const listaTodasDisciplinas = [
+        "Língua Portuguesa", "Matemática", "História", "Geografia", 
+        "Biologia", "Física", "Química", "Filosofia", 
+        "Sociologia", "Arte", "Língua Inglesa", "Mundo do Trabalho"
+    ];
+
+    if (!perfilLogado || (perfilLogado !== 'diretor' && perfilLogado !== 'admin')) {
+        alert("Acesso restrito à Direção e Administradores!");
+        window.location.href = 'index.html';
+    } else {
+        document.getElementById('tituloPainel').innerText = `🏛️ Gestão Administrativa (${perfilLogado.toUpperCase()})`;
+        
+        if (perfilLogado !== 'admin') {
+            const secaoCriar = document.getElementById('secaoCriarAcesso');
+            if (secaoCriar) secaoCriar.style.display = 'none';
+        }
+        
+        preencherSelectDisciplinasFiltro();
+        preencherSelectProfessoresFiltro();
+        renderizarCheckboxesDisciplinas();
+        alternarCampoDisciplinas();
+        carregarDadosIniciaisBase();
+        carregarEquipe();
+        carregarAlunosGeral();
+    }
+
+    function mudarAba(abaId) {
+        document.querySelectorAll('.secao-painel').forEach(sec => sec.classList.remove('ativo'));
+        document.querySelectorAll('.btn-aba').forEach(btn => btn.classList.remove('ativo'));
+        const alvoSecao = document.getElementById(`secao-${abaId}`);
+        if (alvoSecao) alvoSecao.classList.add('ativo');
+        
+        const btnAtivo = Array.from(document.querySelectorAll('.btn-aba')).find(btn => btn.getAttribute('data-aba') === abaId);
+        if (btnAtivo) {
+            btnAtivo.classList.add('ativo');
+        }
+
+        // Carrega automaticamente os dados específicos ao alternar de aba para garantir funcionamento
+        if (abaId === 'equipe') {
+            carregarEquipe();
+        } else if (abaId === 'alunos') {
+            carregarAlunosGeral();
+        }
+    }
+
+    function preencherSelectDisciplinasFiltro() {
+        const select = document.getElementById('filtroFiltroDisciplina');
+        if (!select) return;
+        listaTodasDisciplinas.forEach(disc => {
+            const opt = document.createElement('option');
+            opt.value = disc;
+            opt.innerText = disc;
+            select.appendChild(opt);
+        });
+    }
+
+    async function preencherSelectProfessoresFiltro() {
+        const select = document.getElementById('filtroFiltroProfessor');
+        if (!select) return;
+        select.innerHTML = '<option value="">Todos os Professores</option>';
+        
+        try {
+            const querySnapshot = await getDocs(collection(db, "funcionariosCadastrados"));
+            querySnapshot.forEach(docSnap => {
+                const f = docSnap.data();
+                const opt = document.createElement('option');
+                opt.value = f.nome;
+                opt.innerText = f.nome;
+                select.appendChild(opt);
+            });
+        } catch (e) {
+            console.error("Erro ao carregar professores:", e);
+        }
+    }
+
+    async function carregarDadosIniciaisBase() {
+        try {
+            const alunosSnap = await getDocs(collection(db, "cadastroAlunos"));
+            const funcionariosSnap = await getDocs(collection(db, "funcionariosCadastrados"));
+            
+            document.getElementById('statTotalAlunos').innerText = alunosSnap.size;
+            document.getElementById('statTotalFuncionarios').innerText = funcionariosSnap.size;
+            document.getElementById('statTotalAtendimentos').innerText = '0';
+
+            preencherSelectProfessoresFiltro();
+        } catch (e) {
+            console.error("Erro ao carregar dados da nuvem:", e);
+        }
+    }
+
+    function esconderTodosRelatoriosEspecificos() {
+        document.querySelectorAll('.bloco-relatorio-especifico').forEach(bloco => bloco.style.display = 'none');
+    }
+
+    async function aplicarFiltrosGlobais() {
+        const tipoRel = document.getElementById('tipoRelatorioDesejado').value;
+        const dtInicio = document.getElementById('filtroDataInicio').value;
+        const dtFim = document.getElementById('filtroDataFim').value;
+        const discFiltro = document.getElementById('filtroFiltroDisciplina').value;
+        const profFiltro = document.getElementById('filtroFiltroProfessor').value;
+
+        if (!tipoRel) {
+            alert("Por favor, selecione qual tipo de relatório deseja exibir.");
+            return;
+        }
+
+        try {
+            const snap = await getDocs(collection(db, "registrosPresenca"));
+            const registros = [];
+            snap.forEach(d => registros.push(d.data()));
+
+            const filtrados = registros.filter(reg => {
+                let passa = true;
+                if (dtInicio && reg.data < dtInicio) passa = false;
+                if (dtFim && reg.data > dtFim) passa = false;
+                if (discFiltro) {
+                    const discReg = reg.disciplina || reg.materia || '';
+                    if (discReg !== discFiltro) passa = false;
+                }
+                if (profFiltro) {
+                    const profReg = reg.professor || reg.responsavel || '';
+                    if (profReg !== profFiltro) passa = false;
+                }
+                return passa;
+            });
+
+            document.getElementById('statTotalAtendimentos').innerText = filtrados.length;
+            esconderTodosRelatoriosEspecificos();
+
+            if (tipoRel === 'professor') {
+                document.getElementById('blocoRelatorioProfessor').style.display = 'block';
+                processarResumoProfessor(filtrados);
+            } else if (tipoRel === 'disciplina') {
+                document.getElementById('blocoRelatorioDisciplina').style.display = 'block';
+                processarResumoDisciplina(filtrados);
+            } else if (tipoRel === 'horario') {
+                document.getElementById('blocoRelatorioHorario').style.display = 'block';
+                processarResumoHorario(filtrados);
+            } else if (tipoRel === 'detalhado') {
+                document.getElementById('blocoRelatorioDetalhado').style.display = 'block';
+                renderizarTabelaAtendimentos(filtrados);
+            } else if (tipoRel === 'conclusoes_disciplina_periodo') {
+                document.getElementById('blocoRelatorioConclusoesDisciplinaPeriodo').style.display = 'block';
+                processarConclusoesDisciplinaPeriodo(dtInicio, dtFim, discFiltro);
+            } else if (tipoRel === 'etapas_disciplina_periodo') {
+                document.getElementById('blocoRelatorioEtapasDisciplinaPeriodo').style.display = 'block';
+                processarEtapasDisciplinaPeriodo(dtInicio, dtFim, discFiltro);
+            } else if (tipoRel === 'matriculados_nivel') {
+                document.getElementById('blocoRelatorioMatriculadosNivel').style.display = 'block';
+                processarMatriculadosNivel();
+            } else if (tipoRel === 'concluiu_etapas') {
+                document.getElementById('blocoRelatorioConcluiuEtapas').style.display = 'block';
+                processarConcluiuEtapas(dtInicio, dtFim, discFiltro, profFiltro);
+            } else if (tipoRel === 'concluiu_tudo') {
+                document.getElementById('blocoRelatorioConcluiuTudo').style.display = 'block';
+                processarConcluiuTudo(dtInicio, dtFim);
+            } else if (tipoRel === 'busca_ativa') {
+                document.getElementById('blocoRelatorioBuscaAtiva').style.display = 'block';
+                processarBuscaAtiva();
+            }
+        } catch (e) {
+            console.error("Erro ao aplicar filtros:", e);
+        }
+    }
+
+    async function processarConclusoesDisciplinaPeriodo(dtInicio, dtFim, discFiltro) {
+        let registrosConclusao = [];
+        try {
+            const snap = await getDocs(collection(db, "registrosConclusaoCurso"));
+            snap.forEach(d => registrosConclusao.push(d.data()));
+        } catch(e) {}
+        
+        const tbody = document.getElementById('tabelaConclusoesDisciplinaPeriodo');
+        tbody.innerHTML = '';
+
+        const filtrados = registrosConclusao.filter(reg => {
+            const origem = (reg.origem || reg.tipo || 'professor').toLowerCase();
+            if (origem.includes('secretaria')) return false;
+
+            let dataReg = reg.data || reg.dataRegistro || reg.dataConclusao || '';
+            if (dtInicio && dataReg && dataReg < dtInicio) return false;
+            if (dtFim && dataReg && dataReg > dtFim) return false;
+
+            const discReg = reg.disciplina || reg.materia || '';
+            if (discFiltro && discReg && discReg !== discFiltro) return false;
+            return true;
+        });
+
+        const contagem = {};
+        filtrados.forEach(reg => {
+            const d = reg.disciplina || reg.materia || 'Geral / Não especificada';
+            contagem[d] = (contagem[d] || 0) + 1;
+        });
+
+        const ordenados = Object.entries(contagem).sort((a,b) => b[1] - a[1]);
+        if (ordenados.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="2" style="text-align:center; color:#777;">Nenhuma conclusão total registrada no período selecionado.</td></tr>`;
+        } else {
+            ordenados.forEach(([disc, qtd]) => {
+                tbody.innerHTML += `<tr><td><strong>${disc}</strong></td><td style="text-align:center; font-weight:bold; color:#003366;">${qtd}</td></tr>`;
+            });
+        }
+    }
+
+    async function processarEtapasDisciplinaPeriodo(dtInicio, dtFim, discFiltro) {
+        let registrosNotas = [];
+        try {
+            const snap = await getDocs(collection(db, "registrosNotas"));
+            snap.forEach(d => registrosNotas.push(d.data()));
+        } catch(e) {}
+        
+        const tbody = document.getElementById('tabelaEtapasDisciplinaPeriodo');
+        tbody.innerHTML = '';
+
+        const filtrados = registrosNotas.filter(reg => {
+            const origem = (reg.origem || reg.tipo || 'professor').toLowerCase();
+            if (origem.includes('secretaria')) return false;
+
+            let dataReg = reg.data || reg.dataRegistro || '';
+            if (dtInicio && dataReg && dataReg < dtInicio) return false;
+            if (dtFim && dataReg && dataReg > dtFim) return false;
+
+            const discReg = reg.disciplina || reg.materia || '';
+            if (discFiltro && discReg && discReg !== discFiltro) return false;
+
+            const nota = parseFloat(reg.nota || reg.valorNota || reg.pontuacoes || 0);
+            const statusAprovado = (reg.status || '').toLowerCase().includes('aprovado') || (reg.concluido === true);
+            
+            return nota >= 60 || statusAprovado;
+        });
+
+        const contagem = {};
+        filtrados.forEach(reg => {
+            const d = reg.disciplina || reg.materia || 'Geral / Não especificada';
+            contagem[d] = (contagem[d] || 0) + 1;
+        });
+
+        const ordenados = Object.entries(contagem).sort((a,b) => b[1] - a[1]);
+        if (ordenados.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="2" style="text-align:center; color:#777;">Nenhuma etapa concluída registrada no período selecionado.</td></tr>`;
+        } else {
+            ordenados.forEach(([disc, qtd]) => {
+                tbody.innerHTML += `<tr><td><strong>${disc}</strong></td><td style="text-align:center; font-weight:bold; color:#003366;">${qtd}</td></tr>`;
+            });
+        }
+    }
+
+    function processarResumoProfessor(dados) {
+        const contagem = {};
+        dados.forEach(reg => {
+            const prof = reg.professor || reg.responsavel || 'Não especificado';
+            contagem[prof] = (contagem[prof] || 0) + 1;
+        });
+        const tbody = document.getElementById('tabelaResumoProfessor');
+        tbody.innerHTML = '';
+        const ordenados = Object.entries(contagem).sort((a,b) => b[1] - a[1]);
+        if (ordenados.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="2" style="text-align:center; color:#777;">Nenhum atendimento no período.</td></tr>`;
+        } else {
+            ordenados.forEach(([prof, qtd]) => {
+                tbody.innerHTML += `<tr><td>${prof}</td><td style="text-align:center; font-weight:bold; color:#003366;">${qtd}</td></tr>`;
+            });
+        }
+    }
+
+    function processarResumoDisciplina(dados) {
+        const contagem = {};
+        dados.forEach(reg => {
+            const disc = reg.disciplina || reg.materia || 'Não especificada';
+            contagem[disc] = (contagem[disc] || 0) + 1;
+        });
+        const tbody = document.getElementById('tabelaResumoDisciplina');
+        tbody.innerHTML = '';
+        const ordenados = Object.entries(contagem).sort((a,b) => b[1] - a[1]);
+        if (ordenados.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="2" style="text-align:center; color:#777;">Nenhum atendimento no período.</td></tr>`;
+        } else {
+            ordenados.forEach(([disc, qtd]) => {
+                tbody.innerHTML += `<tr><td>${disc}</td><td style="text-align:center; font-weight:bold; color:#003366;">${qtd}</td></tr>`;
+            });
+        }
+    }
+
+    function processarResumoHorario(dados) {
+        const contagem = {};
+        dados.forEach(reg => {
+            let horaStr = reg.hora || reg.horario || 'N/I';
+            if (horaStr.length >= 2) {
+                horaStr = horaStr.substring(0, 2) + ':00h - ' + (parseInt(horaStr.substring(0, 2)) + 1) + ':00h';
+            }
+            contagem[horaStr] = (contagem[horaStr] || 0) + 1;
+        });
+        const tbody = document.getElementById('tabelaResumoHorarios');
+        tbody.innerHTML = '';
+        const ordenados = Object.entries(contagem).sort((a,b) => b[1] - a[1]);
+        if (ordenados.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="2" style="text-align:center; color:#777;">Nenhum atendimento no período.</td></tr>`;
+        } else {
+            ordenados.forEach(([hora, qtd]) => {
+                tbody.innerHTML += `<tr><td>${hora}</td><td style="text-align:center; font-weight:bold; color:#003366;">${qtd}</td></tr>`;
+            });
+        }
+    }
+
+    function renderizarTabelaAtendimentos(dados) {
+        const tbody = document.getElementById('tabelaRelatorioAtendimentos');
+        tbody.innerHTML = '';
+
+        if (dados.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#777;">Nenhum atendimento encontrado para os filtros selecionados.</td></tr>`;
+            return;
+        }
+
+        const dadosOrdenados = [...dados].sort((a, b) => {
+            const dtA = new Date(`${a.data}T${a.hora || '00:00'}`);
+            const dtB = new Date(`${b.data}T${b.hora || '00:00'}`);
+            return dtB - dtA;
+        });
+
+        dadosOrdenados.forEach(reg => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${formatarDataExibicao(reg.data)}</td>
+                <td>${reg.hora || reg.horario || '-'}</td>
+                <td><strong>${reg.nomeAluno || reg.aluno || 'Estudante'}</strong></td>
+                <td>${reg.cpfAluno || '-'}</td>
+                <td>${reg.disciplina || reg.materia || '-'}</td>
+                <td>${reg.professor || reg.responsavel || 'Equipe CEEJA'}</td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    async function processarMatriculadosNivel() {
+        let totalFundamental = 0;
+        let totalMedio = 0;
+
+        try {
+            const snap = await getDocs(collection(db, "cadastroAlunos"));
+            snap.forEach(d => {
+                const a = d.data();
+                if ((a.ensino || '').toLowerCase() === 'fundamental') {
+                    totalFundamental++;
+                } else if ((a.ensino || '').toLowerCase() === 'médio' || (a.ensino || '').toLowerCase() === 'medio') {
+                    totalMedio++;
+                }
+            });
+        } catch(e) {}
+
+        const tbody = document.getElementById('tabelaMatriculadosNivel');
+        tbody.innerHTML = `
+            <tr><td>Ensino Fundamental</td><td style="text-align:center; font-weight:bold; color:#003366;">${totalFundamental}</td></tr>
+            <tr><td>Ensino Médio</td><td style="text-align:center; font-weight:bold; color:#003366;">${totalMedio}</td></tr>
+            <tr style="background:#f8f9fa; font-weight:bold;"><td>Total Geral</td><td style="text-align:center; color:#003366;">${totalFundamental + totalMedio}</td></tr>
+        `;
+    }
+
+    async function processarConcluiuEtapas(dtInicio, dtFim, discFiltro, profFiltro) {
+        let registrosNotas = [];
+        try {
+            const snap = await getDocs(collection(db, "registrosNotas"));
+            snap.forEach(d => registrosNotas.push(d.data()));
+        } catch(e) {}
+
+        const tbody = document.getElementById('tabelaConcluiuEtapas');
+        tbody.innerHTML = '';
+
+        const etapasValidas = registrosNotas.filter(reg => {
+            const origem = (reg.origem || reg.tipo || 'professor').toLowerCase();
+            if (origem.includes('secretaria')) return false;
+
+            if (dtInicio && reg.data < dtInicio) return false;
+            if (dtFim && reg.data > dtFim) return false;
+            if (discFiltro && (reg.disciplina || reg.materia) !== discFiltro) return false;
+            if (profFiltro && (reg.professor || reg.responsavel) !== profFiltro) return false;
+
+            const nota = parseFloat(reg.nota || reg.valorNota || 0);
+            return nota >= 60;
+        });
+
+        if (etapasValidas.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:#777;">Nenhuma conclusão de etapa registrada por professores no período selecionado.</td></tr>`;
+            return;
+        }
+
+        etapasValidas.forEach(item => {
+            tbody.innerHTML += `
+                <tr>
+                    <td><strong>${item.nomeAluno || item.aluno || 'Estudante'}</strong></td>
+                    <td>Ensino ${item.ensino || 'Fundamental'}</td>
+                    <td>${item.disciplina || item.materia || '-'}</td>
+                    <td>${item.professor || item.responsavel || 'Professor Docente'}</td>
+                    <td style="text-align:center; font-weight:bold; color:#28a745;">Etapa Aprovada (Nota: ${item.nota || item.valorNota})</td>
+                </tr>
+            `;
+        });
+    }
+
+    async function processarConcluiuTudo(dtInicio, dtFim) {
+        let registrosConclusao = [];
+        try {
+            const snap = await getDocs(collection(db, "registrosConclusaoCurso"));
+            snap.forEach(d => registrosConclusao.push(d.data()));
+        } catch(e) {}
+
+        const tbody = document.getElementById('tabelaConcluiuTudo');
+        tbody.innerHTML = '';
+
+        const concluintesValidos = registrosConclusao.filter(reg => {
+            const origem = (reg.origem || reg.tipo || 'professor').toLowerCase();
+            if (origem.includes('secretaria')) return false;
+
+            if (dtInicio && reg.data < dtInicio) return false;
+            if (dtFim && reg.data > dtFim) return false;
+            return true;
+        });
+
+        if (concluintesValidos.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#777;">Nenhum aluno formou/concluiu tudo por lançamento docente no período selecionado.</td></tr>`;
+            return;
+        }
+
+        concluintesValidos.forEach(f => {
+            tbody.innerHTML += `
+                <tr>
+                    <td><strong>${f.nomeAluno || f.nome}</strong></td>
+                    <td>${f.matricula || 'N/A'}</td>
+                    <td>${f.cpfAluno || f.cpf || '-'}</td>
+                    <td>Ensino ${f.ensino || 'Fundamental'}</td>
+                    <td>${formatarDataExibicao(f.data)}</td>
+                    <td style="text-align:center; font-weight:bold; color:#28a745;">🏆 CONCLUÍDO (DOCENTE)</td>
+                </tr>
+            `;
+        });
+    }
+
+    async function processarBuscaAtiva() {
+        const tbody = document.getElementById('tabelaBuscaAtiva');
+        tbody.innerHTML = '';
+
+        const dataHoje = new Date();
+        dataHoje.setHours(0, 0, 0, 0);
+
+        let alunos = [];
+        let registrosPresenca = [];
+
+        try {
+            const aSnap = await getDocs(collection(db, "cadastroAlunos"));
+            aSnap.forEach(d => alunos.push(d.data()));
+
+            const pSnap = await getDocs(collection(db, "registrosPresenca"));
+            pSnap.forEach(d => registrosPresenca.push(d.data()));
+        } catch(e) {}
+
+        let alunosEmRisco = [];
+
+        alunos.forEach(aluno => {
+            const cpfLimpo = (aluno.cpf || '').replace(/\D/g, '');
+            const presencasAluno = registrosPresenca.filter(p => (p.cpfAluno || '').replace(/\D/g, '') === cpfLimpo);
+
+            let ultimaDataStr = null;
+            if (presencasAluno.length > 0) {
+                presencasAluno.sort((a, b) => new Date(`${b.data}T${b.hora || '00:00'}`) - new Date(`${a.data}T${a.hora || '00:00'}`));
+                ultimaDataStr = presencasAluno[0].data;
+            } else if (aluno.dataUltimaPresenca) {
+                ultimaDataStr = aluno.dataUltimaPresenca;
+            }
+
+            let diasAusente = 999;
+            if (ultimaDataStr) {
+                let p = ultimaDataStr.split('-');
+                let dtUltima = new Date(p[0], p[1] - 1, p[2]);
+                dtUltima.setHours(0, 0, 0, 0);
+                diasAusente = Math.floor((dataHoje - dtUltima) / (1000 * 60 * 60 * 24));
+            }
+
+            if (diasAusente > 15) {
+                alunosEmRisco.push({
+                    nome: aluno.nome,
+                    matricula: aluno.matricula || 'N/A',
+                    telefone: aluno.telefone || 'Não informado',
+                    ensino: aluno.ensino || 'Fundamental',
+                    dias: diasAusente === 999 ? 'Sem registro' : `${diasAusente} dias`
+                });
+            }
+        });
+
+        if (alunosEmRisco.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:#777;">Nenhum aluno em situação de busca ativa (mais de 15 dias sem atendimento).</td></tr>`;
+            return;
+        }
+
+        alunosEmRisco.forEach(item => {
+            tbody.innerHTML += `
+                <tr>
+                    <td><strong>${item.nome}</strong></td>
+                    <td>${item.matricula}</td>
+                    <td>${item.telefone}</td>
+                    <td>Ensino ${item.ensino}</td>
+                    <td style="text-align:center; font-weight:bold; color:#dc3545;">${item.dias}</td>
+                </tr>
+            `;
+        });
+    }
+
+    function limparFiltrosAtendimentos() {
+        document.getElementById('tipoRelatorioDesejado').value = '';
+        document.getElementById('filtroDataInicio').value = '';
+        document.getElementById('filtroDataFim').value = '';
+        document.getElementById('filtroFiltroDisciplina').value = '';
+        document.getElementById('filtroFiltroProfessor').value = '';
+        esconderTodosRelatoriosEspecificos();
+    }
+
+    function formatarDataExibicao(dataStr) {
+        if (!dataStr) return '-';
+        try {
+            if (dataStr.includes('-')) {
+                const p = dataStr.split('-');
+                if (p.length === 3) return `${p[2]}/${p[1]}/${p[0]}`;
+            }
+            return dataStr;
+        } catch(e) { return dataStr; }
+    }
+
+    async function carregarAlunosGeral() {
+        const tbody = document.getElementById('tabelaAlunosGeral');
+        if (!tbody) return;
+        tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:#777;">A carregar alunos...</td></tr>`;
+
+        try {
+            const snap = await getDocs(collection(db, "cadastroAlunos"));
+            tbody.innerHTML = '';
+            let contador = 0;
+            snap.forEach(d => {
+                const aluno = d.data();
+                contador++;
+                tbody.innerHTML += `
+                    <tr>
+                        <td><strong>${aluno.nome}</strong></td>
+                        <td>${aluno.matricula || '-'}</td>
+                        <td>${aluno.cpf || '-'}</td>
+                        <td><span style="font-weight:bold; color:#003366;">Ensino ${aluno.ensino || 'Fundamental'}</span></td>
+                    </tr>
+                `;
+            });
+            if (contador === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:#777;">Nenhum aluno cadastrado.</td></tr>`;
+            }
+        } catch(e) {
+            tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:#777;">Erro ao carregar alunos da nuvem.</td></tr>`;
+        }
+    }
+
+    function renderizarCheckboxesDisciplinas() {
+        const container = document.getElementById('containerCheckboxesDisciplinas');
+        if (!container) return;
+        container.innerHTML = '';
+        listaTodasDisciplinas.forEach((disc) => {
+            container.innerHTML += `
+                <label class="item-check-disc">
+                    <input type="checkbox" name="discOption" value="${disc}"> ${disc}
+                </label>`;
+        });
+    }
+
+    function mascaraCPF(i) {
+        let v = i.value.replace(/\D/g, "");
+        v = v.replace(/(\d{3})(\d)/, "$1.$2");
+        v = v.replace(/(\d{3})(\d)/, "$1.$2");
+        v = v.replace(/(\d{3})(\d{1,2})$/, "$1-$2");
+        i.value = v;
+    }
+
+    function mascaraTelefone(i) {
+        let v = i.value.replace(/\D/g, "");
+        v = v.replace(/^(\d{2})(\d)/g, "($1) $2");
+        v = v.replace(/(\d{5})(\d)/, "$1-$2");
+        i.value = v;
+    }
+
+    function alternarCampoDisciplinas() {
+        const perfilSelect = document.getElementById('novoPerfil');
+        const grupoDisc = document.getElementById('grupoDiscProf');
+        if (perfilSelect && grupoDisc) {
+            grupoDisc.style.display = (perfilSelect.value === 'professor') ? 'grid' : 'none';
+        }
+    }
+
+    async function salvarNovoAcesso(e) {
+        e.preventDefault();
+        const nome = document.getElementById('novoNome').value.trim().toUpperCase();
+        const cpfLimpo = document.getElementById('novoCpf').value.replace(/\D/g, '');
+        const telefone = document.getElementById('novoTelefone').value.trim();
+        const perfil = document.getElementById('novoPerfil').value;
+
+        try {
+            const snap = await getDocs(collection(db, "funcionariosCadastrados"));
+            let cpfExiste = false;
+            snap.forEach(d => {
+                if (d.data().usuario === cpfLimpo) cpfExiste = true;
+            });
+
+            if (cpfExiste) {
+                document.getElementById('msgErro').style.display = 'block';
+                setTimeout(() => document.getElementById('msgErro').style.display = 'none', 3000);
+                return;
+            }
+
+            let disciplinas = [];
+            if (perfil === 'professor') {
+                document.querySelectorAll('input[name="discOption"]:checked').forEach(cb => disciplinas.push(cb.value));
+                if (disciplinas.length === 0) {
+                    alert("Selecione pelo menos uma disciplina para o professor!");
+                    return;
+                }
+            }
+
+            const novoFunc = { nome, cpf: cpfLimpo, telefone, perfil, usuario: cpfLimpo, senha: cpfLimpo, disciplinas };
+            await setDoc(doc(db, "funcionariosCadastrados", cpfLimpo), novoFunc);
+
+            document.getElementById('msgSucesso').style.display = 'block';
+            document.getElementById('formNovoAcesso').reset();
+            document.querySelectorAll('input[name="discOption"]').forEach(cb => cb.checked = false);
+            alternarCampoDisciplinas();
+            
+            setTimeout(() => document.getElementById('msgSucesso').style.display = 'none', 3000);
+            carregarEquipe();
+            carregarDadosIniciaisBase();
+        } catch(err) {
+            console.error("Erro ao salvar funcionário:", err);
+            alert("Erro ao conectar com a nuvem.");
+        }
+    }
+
+    async function carregarEquipe() {
+        const tbody = document.getElementById('tabelaFuncionarios');
+        if (!tbody) return;
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#777;">A carregar equipa...</td></tr>`;
+
+        try {
+            const snap = await getDocs(collection(db, "funcionariosCadastrados"));
+            tbody.innerHTML = '';
+            let contador = 0;
+            snap.forEach(docSnap => {
+                const f = docSnap.data();
+                const docId = docSnap.id;
+                contador++;
+                
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><strong>${f.nome}</strong></td>
+                    <td>${f.usuario}</td>
+                    <td>${f.telefone || '-'}</td>
+                    <td><span style="text-transform:uppercase; font-weight:bold; color:#003366;">${f.perfil}</span></td>
+                    <td><small>${(f.disciplinas && f.disciplinas.length > 0) ? f.disciplinas.join(', ') : '-'}</small></td>
+                    <td>
+                        <div class="acoes-celula">
+                            <button type="button" class="btn-reset-senha" data-id="${docId}" data-nome="${f.nome}" data-usuario="${f.usuario}">🔄 Resetar Senha</button>
+                            ${perfilLogado === 'admin' && f.usuario !== 'admin' ? `<button type="button" class="btn-deletar" data-id="${docId}">🗑️ Remover</button>` : ''}
+                        </div>
+                    </td>`;
+                tbody.appendChild(tr);
+            });
+
+            if (contador === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#777;">Nenhum funcionário cadastrado.</td></tr>`;
+            }
+
+            // Adicionar eventos dinâmicos para os botões da tabela
+            tbody.querySelectorAll('.btn-reset-senha').forEach(btn => {
+                btn.addEventListener('click', () => resetarSenhaPadrao(btn.dataset.id, btn.dataset.nome, btn.dataset.usuario));
+            });
+            tbody.querySelectorAll('.btn-deletar').forEach(btn => {
+                btn.addEventListener('click', () => excluirAcesso(btn.dataset.id));
+            });
+
+        } catch(e) {
+            console.error("Erro ao carregar equipe:", e);
+            tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#777;">Erro ao carregar equipa da nuvem.</td></tr>`;
+        }
+    }
+
+    async function resetarSenhaPadrao(docId, nome, usuario) {
+        if (confirm(`Restaurar senha de ${nome} para o CPF (${usuario})?`)) {
+            try {
+                await setDoc(doc(db, "funcionariosCadastrados", docId), { senha: usuario }, { merge: true });
+                alert("Senha resetada com sucesso!");
+            } catch(e) {
+                alert("Erro ao resetar senha.");
+            }
+        }
+    }
+
+    async function excluirAcesso(docId) {
+        if (confirm("Tem certeza que deseja remover este funcionário?")) {
+            try {
+                await deleteDoc(doc(db, "funcionariosCadastrados", docId));
+                carregarEquipe();
+                carregarDadosIniciaisBase();
+            } catch(e) {
+                alert("Erro ao remover funcionário.");
+            }
+        }
+    }
+
+    function abrirModalSenha() { 
+        const modal = document.getElementById('modalSenha');
+        if (modal) modal.style.display = 'flex'; 
+    }
+
+    function fecharModalSenha() {
+        const modal = document.getElementById('modalSenha');
+        if (modal) modal.style.display = 'none';
+        const form = document.getElementById('formAlterarSenha');
+        if (form) form.reset();
+    }
+
+    async function alterarMinhaSenha(e) {
+        e.preventDefault();
+        const senhaAtual = document.getElementById('senhaAtual').value;
+        const novaSenha = document.getElementById('novaSenhaAdmin').value;
+
+        try {
+            const snap = await getDocs(collection(db, "funcionariosCadastrados"));
+            let docEncontradoId = null;
+            let funcionarioDados = null;
+
+            snap.forEach(d => {
+                const f = d.data();
+                if (f.usuario.toLowerCase() === usuarioLogado.toLowerCase()) {
+                    docEncontradoId = d.id;
+                    funcionarioDados = f;
+                }
+            });
+
+            if (docEncontradoId && funcionarioDados.senha === senhaAtual) {
+                await setDoc(doc(db, "funcionariosCadastrados", docEncontradoId), { senha: novaSenha }, { merge: true });
+                document.getElementById('msgSucessoSenha').style.display = 'block';
+                setTimeout(() => { fecharModalSenha(); }, 1500);
+            } else {
+                document.getElementById('msgErroSenha').style.display = 'block';
+            }
+        } catch(err) {
+            alert("Erro ao atualizar senha.");
+        }
+    }
+
+    function fazerLogout() {
+        sessionStorage.clear();
+        window.location.href = 'index.html';
+    }
+
+    // Configuração de Event Listeners Globais para garantir robustez no GitHub Pages
+    document.addEventListener("DOMContentLoaded", () => {
+        // Abas de navegação
+        document.querySelectorAll('.btn-aba').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const aba = btn.getAttribute('data-aba');
+                if (aba) mudarAba(aba);
+            });
+        });
+
+        // Botões de topo e ações
+        const btnAbrirModal = document.getElementById('btnAbrirModalSenha');
+        if (btnAbrirModal) btnAbrirModal.addEventListener('click', abrirModalSenha);
+
+        const btnFecharModal = document.getElementById('btnFecharModalSenha');
+        if (btnFecharModal) btnFecharModal.addEventListener('click', fecharModalSenha);
+
+        const btnLogout = document.getElementById('btnLogout');
+        if (btnLogout) btnLogout.addEventListener('click', fazerLogout);
+
+        const btnAplicarFiltros = document.getElementById('btnAplicarFiltros');
+        if (btnAplicarFiltros) btnAplicarFiltros.addEventListener('click', aplicarFiltrosGlobais);
+
+        const btnImprimirRelatorio = document.getElementById('btnImprimirRelatorio');
+        if (btnImprimirRelatorio) btnImprimirRelatorio.addEventListener('click', () => window.print());
+
+        const btnLimparFiltros = document.getElementById('btnLimparFiltros');
+        if (btnLimparFiltros) btnLimparFiltros.addEventListener('click', limparFiltrosAtendimentos);
+
+        // Máscaras e campos
+        const novoCpf = document.getElementById('novoCpf');
+        if (novoCpf) novoCpf.addEventListener('input', (e) => mascaraCPF(e.target));
+
+        const novoTelefone = document.getElementById('novoTelefone');
+        if (novoTelefone) novoTelefone.addEventListener('input', (e) => mascaraTelefone(e.target));
+
+        const novoPerfil = document.getElementById('novoPerfil');
+        if (novoPerfil) novoPerfil.addEventListener('change', alternarCampoDisciplinas);
+
+        const formNovoAcesso = document.getElementById('formNovoAcesso');
+        if (formNovoAcesso) formNovoAcesso.addEventListener('submit', salvarNovoAcesso);
+
+        const formAlterarSenha = document.getElementById('formAlterarSenha');
+        if (formAlterarSenha) formAlterarSenha.addEventListener('submit', alterarMinhaSenha);
+
+        window.addEventListener('click', (event) => {
+            const modal = document.getElementById('modalSenha');
+            if (event.target === modal) { fecharModalSenha(); }
+        });
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,5 @@
+ARQUIVOS ORIGINAIS QUE NAO PUDERAM SER COPIADOS PARA O PACOTE AUTOMATICAMENTE:
+- lista_fundamental.html
+- impressao_ficha.html
+
+Eles continuam anexados nesta conversa. Copie-os para a raiz do repositorio junto aos demais arquivos antes de publicar no GitHub Pages.

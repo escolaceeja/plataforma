@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel Pedagógico - CEEJA Linhares</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background: #f0f2f5; padding: 20px; color: #333; }
+        .container { max-width: 1250px; margin: 0 auto; }
+        .card { background: white; padding: 25px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); margin-bottom: 20px; }
+        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #f0f2f5; padding-bottom: 15px; margin-bottom: 20px; flex-wrap: wrap; gap: 10px; }
+        .header h1 { color: #6f42c1; font-size: 22px; }
+        .usuario-info { font-size: 14px; font-weight: 600; color: #555; background: #e9ecef; padding: 6px 12px; border-radius: 20px; }
+        .acoes-header { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+        .btn-header { border: none; padding: 8px 16px; border-radius: 5px; font-weight: bold; cursor: pointer; transition: 0.2s; display: inline-flex; align-items: center; gap: 5px; text-decoration: none; font-size: 13px; }
+        .btn-relatorio { background: #003366; color: white; }
+        .btn-relatorio:hover { background: #002244; }
+        .btn-senha { background: #ffc107; color: #212529; }
+        .btn-senha:hover { background: #e0a800; }
+        .btn-logout { background: #dc3545; color: white; }
+        .btn-logout:hover { background: #bd2130; }
+        
+        .metricas { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 20px; }
+        .box-metrica { background: #f8f9fa; border: 1px solid #e0e0e0; border-left: 5px solid #6f42c1; padding: 15px; border-radius: 6px; cursor: pointer; transition: transform 0.1s, box-shadow 0.1s; }
+        .box-metrica:hover { transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        .box-metrica.atencao { border-left-color: #fd7e14; }
+        .box-metrica.critico { border-left-color: #dc3545; }
+        .box-metrica.acompanhamento { border-left-color: #17a2b8; }
+        .box-metrica h4 { font-size: 12px; color: #666; margin-bottom: 5px; text-transform: uppercase; }
+        .box-metrica div { font-size: 22px; font-weight: bold; color: #333; }
+
+        .tabs-ensino { display: flex; gap: 10px; border-bottom: 2px solid #ddd; margin-bottom: 15px; }
+        .tab-btn { padding: 10px 20px; border: none; background: none; font-size: 15px; font-weight: bold; color: #666; cursor: pointer; border-bottom: 3px solid transparent; transition: 0.2s; }
+        .tab-btn.active { color: #6f42c1; border-bottom-color: #6f42c1; }
+
+        .area-pesquisa { background: #f8f9fa; border: 1px solid #e0e0e0; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
+        .filtros-busca { display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap; align-items: center; }
+        .filtros-busca input { flex: 1; min-width: 250px; padding: 10px 12px; border: 1px solid #ccc; border-radius: 5px; font-size: 14px; }
+        .btn-filtro { padding: 8px 14px; border: 1px solid #ccc; background: #fff; border-radius: 5px; cursor: pointer; font-weight: 600; font-size: 13px; transition: 0.2s; }
+        .btn-filtro.ativo { background: #6f42c1; color: white; border-color: #6f42c1; }
+
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; font-size: 13px; }
+        th { background: #6f42c1; color: white; }
+        tr:nth-child(even) { background-color: #f9f9f9; }
+
+        .badge-status { padding: 4px 8px; border-radius: 4px; font-weight: bold; font-size: 11px; display: inline-block; }
+        .badge-normal { background: #d4edda; color: #155724; }
+        .badge-atencao { background: #ffe8cc; color: #d9480f; }
+        .badge-critico { background: #f8d7da; color: #721c24; }
+        .badge-acompanhamento { background: #d1ecf1; color: #0c5460; }
+        .badge-ressalva { background: #f8d7da; color: #721c24; border: 1px dashed #dc3545; animation: pulse 2s infinite; }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.7; }
+            100% { opacity: 1; }
+        }
+
+        .btn-whats { background: #25D366; color: white; padding: 5px 10px; border-radius: 4px; text-decoration: none; font-weight: bold; font-size: 12px; display: inline-flex; align-items: center; gap: 4px; }
+        .btn-whats:hover { background: #1eb854; }
+        .btn-dossie { background: #6f42c1; color: white; border: none; padding: 5px 10px; border-radius: 4px; font-size: 12px; cursor: pointer; font-weight: bold; }
+        .btn-dossie:hover { background: #59339d; }
+        .btn-registro { background: #17a2b8; color: white; border: none; padding: 5px 10px; border-radius: 4px; font-size: 12px; cursor: pointer; font-weight: bold; }
+        .btn-registro:hover { background: #138496; }
+
+        /* Modais */
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); justify-content: center; align-items: center; }
+        .modal-conteudo { background-color: white; padding: 25px; border-radius: 10px; width: 90%; max-width: 500px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+        .modal-conteudo-largo { max-width: 800px; max-height: 90vh; overflow-y: auto; }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 15px; }
+        .fechar-modal { font-size: 20px; font-weight: bold; cursor: pointer; color: #888; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: 600; font-size: 13px; }
+        .form-group input, .form-group textarea { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 5px; }
+        .btn-salvar-modal { background: #28a745; color: white; border: none; padding: 10px 15px; border-radius: 5px; font-weight: bold; cursor: pointer; width: 100%; }
+        .historico-lista { max-height: 150px; overflow-y: auto; background: #f8f9fa; padding: 10px; border: 1px solid #ddd; border-radius: 5px; margin-bottom: 15px; font-size: 12px; }
+        .historico-item { border-bottom: 1px solid #eee; padding-bottom: 5px; margin-bottom: 5px; }
+
+        /* Estilos do Dossiê */
+        .dossie-grid-info { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; background: #f8f9fa; padding: 12px; border-radius: 6px; border: 1px solid #e0e0e0; margin-bottom: 15px; font-size: 13px; }
+        .dossie-frequencia-box { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; background: #eef2f7; padding: 12px; border-radius: 6px; margin-bottom: 15px; text-align: center; }
+        .frequencia-card { background: white; padding: 10px; border-radius: 5px; border: 1px solid #cbd5e1; }
+        .frequencia-card .num { font-size: 20px; font-weight: bold; }
+        .frequencia-card.presente .num { color: #28a745; }
+        .frequencia-card.afastado .num { color: #dc3545; }
+        
+        .barra-progresso-bg { background: #e9ecef; border-radius: 10px; height: 18px; width: 100%; margin-top: 5px; overflow: hidden; position: relative; }
+        .barra-progresso-fill { background: #28a745; height: 100%; width: 0%; transition: width 0.4s ease; }
+        .barra-progresso-texto { position: absolute; width: 100%; text-align: center; font-size: 11px; font-weight: bold; color: #000; top: 1px; }
+        
+        .tabela-dossie { width: 100%; margin-top: 8px; border-collapse: collapse; }
+        .tabela-dossie th { background: #003366; color: white; font-size: 11px; padding: 6px; }
+        .tabela-dossie td { padding: 6px 8px; font-size: 12px; }
+        
+        @media print {
+            body * { visibility: hidden; }
+            #modalDossie, #modalDossie * { visibility: visible; }
+            #modalDossie { position: absolute; left: 0; top: 0; width: 100%; height: auto; background: white; }
+            .fechar-modal, .btn-imprimir-dossie { display: none !important; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="card">
+        <div class="header">
+            <h1>📋 Painel e Acompanhamento Pedagógico</h1>
+            <div class="acoes-header">
+                <span class="usuario-info">👤 Pedagogo: <span id="nomePedagogoExibicao">Carregando...</span></span>
+                <a href="relatorio-pedagogico.html" class="btn-header btn-relatorio">📊 Relatório Detalhado</a>
+                <button class="btn-header btn-senha" onclick="abrirModalSenha()">🔑 Alterar Senha</button>
+                <button class="btn-header btn-logout" onclick="fazerLogout()">Sair 🚪</button>
+            </div>
+        </div>
+
+        <!-- Métricas Resumidas -->
+        <div class="metricas">
+            <div class="box-metrica" onclick="exibirCategoria('todos')">
+                <h4>Total de Alunos</h4>
+                <div id="totalAlunos">0</div>
+            </div>
+            <div class="box-metrica" onclick="alternarNivelEMostrar('Fundamental')">
+                <h4>Ensino Fundamental</h4>
+                <div id="totalFund">0</div>
+            </div>
+            <div class="box-metrica" onclick="alternarNivelEMostrar('Médio')">
+                <h4>Ensino Médio</h4>
+                <div id="totalMedio">0</div>
+            </div>
+            <div class="box-metrica atencao" onclick="exibirCategoria('atencao')">
+                <h4>Alerta Preventivo (8 a 15d)</h4>
+                <div id="totalAtencao" style="color:#d9480f;">0</div>
+            </div>
+            <div class="box-metrica acompanhamento" onclick="exibirCategoria('acompanhamento')">
+                <h4>Em Acompanhamento</h4>
+                <div id="totalAcompanhamento" style="color:#17a2b8;">0</div>
+            </div>
+            <div class="box-metrica critico" onclick="exibirCategoria('critico')">
+                <h4>Busca Ativa Crítica (+15d)</h4>
+                <div id="totalBuscaAtiva" style="color:#dc3545;">0</div>
+            </div>
+        </div>
+
+        <!-- Abas Nível de Ensino -->
+        <div class="tabs-ensino">
+            <button class="tab-btn active" id="tabTodos" onclick="alternarNivelEnsino('todos')">🌐 Todos os Níveis</button>
+            <button class="tab-btn" id="tabMedio" onclick="alternarNivelEnsino('Médio')">📘 Ensino Médio</button>
+            <button class="tab-btn" id="tabFundamental" onclick="alternarNivelEnsino('Fundamental')">📙 Ensino Fundamental</button>
+        </div>
+
+        <!-- Área de Pesquisa -->
+        <div class="area-pesquisa">
+            <label style="font-size: 13px; font-weight: bold; color: #555;">🔍 Pesquisa de Estudante ou Categoria - <span id="tituloNivelAtual">Todos os Níveis</span></label>
+            <div class="filtros-busca">
+                <input type="text" id="inputBusca" placeholder="Digite o Nome, CPF ou Matrícula para buscar..." onkeyup="processarBuscaManualmente()">
+                <button class="btn-filtro" id="btnExibirTodos" onclick="exibirCategoria('todos')">👥 Exibir Todos</button>
+                <button class="btn-filtro" id="btnFiltroAtencao" onclick="exibirCategoria('atencao')">⚠️ Alerta Preventivo (8-15d)</button>
+                <button class="btn-filtro" id="btnFiltroAcompanhamento" onclick="exibirCategoria('acompanhamento')">📞 Em Acompanhamento</button>
+                <button class="btn-filtro" id="btnFiltroCritico" onclick="exibirCategoria('critico')">🚨 Busca Ativa Crítica (+15d)</button>
+            </div>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Matrícula</th>
+                    <th>Estudante</th>
+                    <th>Nível</th>
+                    <th>Última Presença Detalhada</th>
+                    <th>Status / Ausência</th>
+                    <th>Ações Pedagógicas</th>
+                </tr>
+            </thead>
+            <tbody id="listaPedagogico">
+                <!-- Preenchido via JS -->
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Modal Alterar Senha -->
+<div id="modalSenha" class="modal">
+    <div class="modal-conteudo">
+        <div class="modal-header">
+            <h3>Alterar Senha do Pedagogo</h3>
+            <span class="fechar-modal" onclick="fecharModal('modalSenha')">&times;</span>
+        </div>
+        <div class="form-group">
+            <label>Nova Senha:</label>
+            <input type="password" id="novaSenhaInput" placeholder="Digite a nova senha">
+        </div>
+        <button class="btn-salvar-modal" onclick="salvarNovaSenha()">Salvar Nova Senha</button>
+    </div>
+</div>
+
+<!-- Modal Registro Busca Ativa -->
+<div id="modalBuscaAtiva" class="modal">
+    <div class="modal-conteudo">
+        <div class="modal-header">
+            <h3 id="modalNomeAluno">Registro de Busca Ativa</h3>
+            <span class="fechar-modal" onclick="fecharModal('modalBuscaAtiva')">&times;</span>
+        </div>
+        <input type="hidden" id="modalCpfAluno">
+        <label style="font-weight: bold; font-size: 13px;">Histórico de Tentativas:</label>
+        <div id="historicoContatos" class="historico-lista">Nenhum registro encontrado.</div>
+        
+        <div class="form-group">
+            <label>Novo Registro de Contato (Coloca o aluno em Acompanhamento por 5 dias úteis):</label>
+            <textarea id="textoContato" rows="3" placeholder="Ex: Ligado para o responsável, informou que o aluno volta na próxima semana..."></textarea>
+        </div>
+        <button class="btn-salvar-modal" onclick="salvarRegistroContato()">Registrar Contato</button>
+    </div>
+</div>
+
+<!-- Modal DOSSIÊ INDIVIDUAL DO ALUNO -->
+<div id="modalDossie" class="modal">
+    <div class="modal-conteudo modal-conteudo-largo">
+        <div class="modal-header">
+            <h3 id="dossieNomeAluno">🎓 Dossiê do Estudante</h3>
+            <span class="fechar-modal" onclick="fecharModal('modalDossie')">&times;</span>
+        </div>
+
+        <div class="dossie-grid-info">
+            <div><strong>Matrícula:</strong> <span id="dossieMatricula">-</span></div>
+            <div><strong>CPF:</strong> <span id="dossieCpf">-</span></div>
+            <div><strong>Nível:</strong> <span id="dossieNivel">-</span></div>
+            <div><strong>Telefone:</strong> <span id="dossieTelefone">-</span></div>
+            <div><strong>Último Registro:</strong> <br><span id="dossieUltimaPresenca" style="color:#003366; font-weight:bold;">-</span></div>
+            <div><strong>Situação Atual:</strong> <br><span id="dossieStatusBadge">-</span></div>
+        </div>
+
+        <!-- Painel de Estatística de Frequência -->
+        <div class="dossie-frequencia-box">
+            <div class="frequencia-card presente">
+                <div class="num" id="dossieDiasPresente">0</div>
+                <div style="font-size: 12px; color: #555;">Dias de Presença Registrada</div>
+            </div>
+            <div class="frequencia-card afastado">
+                <div class="num" id="dossieDiasAfastado">0</div>
+                <div style="font-size: 12px; color: #555;">Dias Afastado da Escola</div>
+            </div>
+        </div>
+
+        <div style="margin-bottom: 15px;">
+            <label style="font-size: 12px; font-weight: bold;">Progresso Geral de Conclusão de Etapas:</label>
+            <div class="barra-progresso-bg">
+                <div id="dossieBarraFill" class="barra-progresso-fill"></div>
+                <div id="dossieBarraTexto" class="barra-progresso-texto">0% Concluído</div>
+            </div>
+        </div>
+
+        <h4 style="color: #003366; border-bottom: 2px solid #eee; padding-bottom: 5px; margin-bottom: 10px;">📚 Diagnóstico de Componentes e Etapas Pendentes</h4>
+        <table class="tabela-dossie">
+            <thead>
+                <tr>
+                    <th>Componente Curricular</th>
+                    <th>Etapas Concluídas</th>
+                    <th>Etapas Pendentes / Em Andamento</th>
+                </tr>
+            </thead>
+            <tbody id="dossieTabelaDisciplinas">
+                <!-- Preenchido via JS -->
+            </tbody>
+        </table>
+
+        <h4 style="color: #003366; border-bottom: 2px solid #eee; padding-bottom: 5px; margin-top: 15px; margin-bottom: 8px;">📞 Histórico Recente de Busca Ativa</h4>
+        <div id="dossieHistoricoContatos" class="historico-lista" style="max-height: 100px;">Nenhum contato registrado.</div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 15px;">
+            <button class="btn btn-relatorio btn-imprimir-dossie" onclick="window.print()">🖨️ Imprimir Dossiê</button>
+        </div>
+    </div>
+</div>
+
+<script src="firebase-cloud.js"></script>
+    <script id="ceeja-app-script" type="text/plain">
+    let filtroStatusAtual = 'nenhum';
+    let nivelEnsinoAtual = 'todos';
+
+    const disciplinasFundamental = ["Língua Portuguesa", "Matemática", "História", "Geografia", "Ciências", "Arte", "Língua Inglesa", "Mundo do Trabalho"];
+    const disciplinasMedio = ["Língua Portuguesa", "Matemática", "História", "Geografia", "Biologia", "Física", "Química", "Filosofia", "Sociologia", "Arte", "Língua Inglesa", "Mundo do Trabalho"];
+    const etapasFundamental = ["5ª Etapa / 6º Ano", "6ª Etapa / 7º Ano", "7ª Etapa / 8º Ano", "8ª Etapa / 9º Ano"];
+    const etapasMedio = ["1ª Etapa / 1ª Série", "2ª Etapa / 2ª Série", "3ª Etapa / 3ª Série"];
+
+    const perfilLogado = sessionStorage.getItem('perfilLogado');
+    if (!perfilLogado || (perfilLogado !== 'pedagogo' && perfilLogado !== 'admin' && perfilLogado !== 'diretor' && perfilLogado !== 'secretaria')) {
+        alert("Acesso negado!");
+        window.location.href = 'index.html'; // Atualizado para index.html
+    } else {
+        exibirNomePedagogo();
+        carregarMetricasIniciais();
+        renderizarTabela();
+    }
+
+    function exibirNomePedagogo() {
+        const nomePedagogo = sessionStorage.getItem('usuarioLogado') || localStorage.getItem('nomePedagogo') || 'Pedagogo Pedagógico';
+        document.getElementById('nomePedagogoExibicao').innerText = nomePedagogo;
+    }
+
+    /* --- FUNÇÕES AUXILIARES DE DIAS ÚTEIS --- */
+    function calcularDiasUteisEntre(dataInicio, dataFim) {
+        let inicio = new Date(dataInicio);
+        let fim = new Date(dataFim);
+        let diasUteis = 0;
+
+        let atual = new Date(inicio);
+        atual.setHours(0,0,0,0);
+        fim.setHours(0,0,0,0);
+
+        while (atual < fim) {
+            atual.setDate(atual.getDate() + 1);
+            const diaSemana = atual.getDay();
+            if (diaSemana !== 0 && diaSemana !== 6) { // 0 = Domingo, 6 = Sábado
+                diasUteis++;
+            }
+        }
+        return diasUteis;
+    }
+
+    function obterUltimoContatoBuscaAtiva(cpf) {
+        const historicoGeral = JSON.parse(localStorage.getItem('historicoBuscaAtiva')) || {};
+        const lista = historicoGeral[cpf] || [];
+        if (lista.length === 0) return null;
+        return lista[0];
+    }
+
+    function alternarNivelEMostrar(nivel) {
+        nivelEnsinoAtual = nivel;
+        filtroStatusAtual = 'todos';
+        atualizarVisualAbas();
+        renderizarTabela();
+    }
+
+    function alternarNivelEnsino(nivel) {
+        nivelEnsinoAtual = nivel;
+        atualizarVisualAbas();
+        const termo = document.getElementById('inputBusca').value.trim();
+        if (termo !== '' || filtroStatusAtual !== 'nenhum') {
+            renderizarTabela();
+        }
+    }
+
+    function atualizarVisualAbas() {
+        document.getElementById('tituloNivelAtual').innerText = nivelEnsinoAtual === 'todos' ? 'Todos os Níveis' : `Ensino ${nivelEnsinoAtual}`;
+        document.getElementById('tabTodos').classList.toggle('active', nivelEnsinoAtual === 'todos');
+        document.getElementById('tabMedio').classList.toggle('active', nivelEnsinoAtual === 'Médio');
+        document.getElementById('tabFundamental').classList.toggle('active', nivelEnsinoAtual === 'Fundamental');
+    }
+
+    function exibirCategoria(categoria) {
+        filtroStatusAtual = categoria;
+        document.getElementById('inputBusca').value = '';
+        
+        document.querySelectorAll('.btn-filtro').forEach(b => b.classList.remove('ativo'));
+        if (categoria === 'todos') document.getElementById('btnExibirTodos').classList.add('ativo');
+        if (categoria === 'atencao') document.getElementById('btnFiltroAtencao').classList.add('ativo');
+        if (categoria === 'acompanhamento') document.getElementById('btnFiltroAcompanhamento').classList.add('ativo');
+        if (categoria === 'critico') document.getElementById('btnFiltroCritico').classList.add('ativo');
+
+        renderizarTabela();
+    }
+
+    function processarBuscaManualmente() {
+        const termo = document.getElementById('inputBusca').value.trim();
+        if (termo !== '') {
+            document.querySelectorAll('.btn-filtro').forEach(b => b.classList.remove('ativo'));
+        }
+        renderizarTabela();
+    }
+
+    function obterDadosPresencaCompleta(cpf, dataCadastro) {
+        const registros = JSON.parse(localStorage.getItem('registrosPresenca')) || [];
+        const presencasAluno = registros.filter(r => r.cpfAluno === cpf || (r.cpf && r.cpf === cpf));
+
+        const diasUnicos = new Set(presencasAluno.map(r => r.data)).size;
+
+        if (presencasAluno.length === 0) {
+            return {
+                data: dataCadastro || null,
+                disciplina: 'Nenhum registro de aula',
+                horario: 'N/A',
+                totalDiasPresente: 0
+            };
+        }
+
+        presencasAluno.sort((a, b) => {
+            const dataA = new Date(`${a.data}T${a.horario || '00:00'}`);
+            const dataB = new Date(`${b.data}T${b.horario || '00:00'}`);
+            return dataB - dataA;
+        });
+
+        const ultimo = presencasAluno[0];
+        return {
+            data: ultimo.data,
+            disciplina: ultimo.disciplina || ultimo.materia || 'Geral',
+            horario: ultimo.horario || 'Não informado',
+            totalDiasPresente: diasUnicos
+        };
+    }
+
+    function calcularDiasAusente(dataUltimaPresenca) {
+        if (!dataUltimaPresenca) return 999;
+        const hoje = new Date();
+        const ultima = new Date(dataUltimaPresenca);
+        const diffTime = Math.abs(hoje - ultima);
+        return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    }
+
+    function obterStatusPedagógico(aluno, dadosPresenca) {
+        const diasAusente = calcularDiasAusente(dadosPresenca.data);
+        const ultimoContato = obterUltimoContatoBuscaAtiva(aluno.cpf);
+
+        if (ultimoContato && ultimoContato.dataISO) {
+            const dataContato = new Date(ultimoContato.dataISO);
+            const dataUltimaPresenca = dadosPresenca.data ? new Date(dadosPresenca.data) : null;
+
+            if (!dataUltimaPresenca || dataUltimaPresenca < dataContato) {
+                const diasUteisDesdeContato = calcularDiasUteisEntre(dataContato, new Date());
+                
+                if (diasUteisDesdeContato <= 5) {
+                    return {
+                        categoria: 'acompanhamento',
+                        diasAusente: diasAusente,
+                        diasUteisContato: diasUteisDesdeContato,
+                        dataContatoStr: ultimoContato.data,
+                        html: `<span class="badge-status badge-acompanhamento">📞 Em Acompanhamento (${diasUteisDesdeContato}/5d úteis)</span>`
+                    };
+                } else {
+                    return {
+                        categoria: 'critico',
+                        diasAusente: diasAusente,
+                        diasUteisContato: diasUteisDesdeContato,
+                        atrasado: true,
+                        html: `<span class="badge-status badge-ressalva">⚠️ Prazo Excedido (${diasUteisDesdeContato}d úteis sem retorno)</span>`
+                    };
+                }
+            }
+        }
+
+        // Status Padrão por Dias de Ausência
+        if (diasAusente > 15) {
+            return {
+                categoria: 'critico',
+                diasAusente: diasAusente,
+                html: `<span class="badge-status badge-critico">🚨 Busca Ativa Crítica (${diasAusente === 999 ? 'Sem registro' : diasAusente + ' dias'})</span>`
+            };
+        } else if (diasAusente >= 8) {
+            return {
+                categoria: 'atencao',
+                diasAusente: diasAusente,
+                html: `<span class="badge-status badge-atencao">⚠️ Alerta Preventivo (${diasAusente} dias)</span>`
+            };
+        } else {
+            return {
+                categoria: 'normal',
+                diasAusente: diasAusente,
+                html: `<span class="badge-status badge-normal">✅ Regular (${diasAusente} dias)</span>`
+            };
+        }
+    }
+
+    function carregarMetricasIniciais() {
+        const alunos = JSON.parse(localStorage.getItem('cadastroAlunos')) || [];
+        document.getElementById('totalAlunos').innerText = alunos.length;
+
+        const fund = alunos.filter(a => a.ensino && a.ensino.toLowerCase().includes('fund')).length;
+        const medio = alunos.filter(a => a.ensino && a.ensino.toLowerCase().includes('méd')).length;
+
+        let qtdAtencao = 0;
+        let qtdCritico = 0;
+        let qtdAcompanhamento = 0;
+
+        alunos.forEach(a => {
+            const dadosPresenca = obterDadosPresencaCompleta(a.cpf, a.ultimaPresenca);
+            const statusInfo = obterStatusPedagógico(a, dadosPresenca);
+            
+            if (statusInfo.categoria === 'critico') qtdCritico++;
+            else if (statusInfo.categoria === 'atencao') qtdAtencao++;
+            else if (statusInfo.categoria === 'acompanhamento') qtdAcompanhamento++;
+        });
+
+        document.getElementById('totalFund').innerText = fund;
+        document.getElementById('totalMedio').innerText = medio;
+        document.getElementById('totalAtencao').innerText = qtdAtencao;
+        document.getElementById('totalAcompanhamento').innerText = qtdAcompanhamento;
+        document.getElementById('totalBuscaAtiva').innerText = qtdCritico;
+    }
+
+    function renderizarTabela() {
+        const tbody = document.getElementById('listaPedagogico');
+        const termo = document.getElementById('inputBusca').value.toLowerCase().trim();
+
+        if (termo === '' && filtroStatusAtual === 'nenhum') {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="6" style="text-align:center; padding: 30px; color:#666;">
+                        🔍 <strong>Pesquisa Individual ou por Categoria:</strong><br>
+                        Digite o nome do estudante acima para pesquisar ou clique em um dos botões (ex: <em>Exibir Todos</em>, <em>Alerta Preventivo</em>, <em>Busca Ativa Crítica</em>).
+                    </td>
+                </tr>`;
+            return;
+        }
+
+        const todosAlunos = JSON.parse(localStorage.getItem('cadastroAlunos')) || [];
+        
+        const alunos = todosAlunos.filter(a => {
+            if (nivelEnsinoAtual === 'todos') return true;
+            if (!a.ensino) return false;
+            if (nivelEnsinoAtual === 'Médio') return a.ensino.toLowerCase().includes('méd') || a.ensino.toLowerCase().includes('medio');
+            if (nivelEnsinoAtual === 'Fundamental') return a.ensino.toLowerCase().includes('fund');
+            return true;
+        });
+
+        tbody.innerHTML = '';
+        let totalExibidos = 0;
+
+        alunos.forEach(a => {
+            const dadosPresenca = obterDadosPresencaCompleta(a.cpf, a.ultimaPresenca);
+            const statusInfo = obterStatusPedagógico(a, dadosPresenca);
+
+            let deveExibir = false;
+
+            if (termo !== '') {
+                const nomeStr = a.nome ? a.nome.toLowerCase() : '';
+                const matStr = a.matricula ? a.matricula.toLowerCase() : '';
+                const cpfStr = a.cpf ? a.cpf.toLowerCase() : '';
+                deveExibir = nomeStr.includes(termo) || matStr.includes(termo) || cpfStr.includes(termo);
+            } else if (filtroStatusAtual !== 'nenhum') {
+                deveExibir = (filtroStatusAtual === 'todos') || (filtroStatusAtual === statusInfo.categoria);
+            }
+
+            if (deveExibir) {
+                totalExibidos++;
+                const tr = document.createElement('tr');
+                const foneLimpo = a.telefone ? a.telefone.replace(/\D/g, '') : '';
+                const msgWhats = encodeURIComponent(`Olá ${a.nome}, sentimos sua falta no CEEJA Linhares. Como podemos te ajudar a retomar seus estudos?`);
+                
+                const dataFormatada = dadosPresenca.data ? dadosPresenca.data.split('-').reverse().join('/') : 'Nunca esteve';
+                const detalhePresencaHtml = dadosPresenca.data ? 
+                    `📅 <strong>${dataFormatada}</strong><br>📖 ${dadosPresenca.disciplina}<br>⏰ ${dadosPresenca.horario}` : 
+                    `<span style="color:#888;">Sem registros</span>`;
+
+                tr.innerHTML = `
+                    <td><strong>${a.matricula || 'N/A'}</strong></td>
+                    <td>${(a.nome || 'SEM NOME').toUpperCase()}</td>
+                    <td>${a.ensino || 'Não Informado'}</td>
+                    <td>${detalhePresencaHtml}</td>
+                    <td>${statusInfo.html}</td>
+                    <td>
+                        <div style="display:flex; gap:5px; flex-wrap:wrap;">
+                            <button class="btn-dossie" onclick="abrirModalDossie('${a.cpf}')">👁️ Dossiê</button>
+                            ${foneLimpo ? `<a href="https://wa.me/55${foneLimpo}?text=${msgWhats}" target="_blank" class="btn-whats">📲 Whats</a>` : ''}
+                            <button class="btn-registro" onclick="abrirModalBuscaAtiva('${a.cpf}', '${a.nome}')">📝 Histórico</button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            }
+        });
+
+        if (totalExibidos === 0) {
+            tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#888; padding:20px;">Nenhum estudante encontrado com o critério informado.</td></tr>`;
+        }
+    }
+
+    function abrirModalDossie(cpf) {
+        const todosAlunos = JSON.parse(localStorage.getItem('cadastroAlunos')) || [];
+        const aluno = todosAlunos.find(a => a.cpf === cpf);
+
+        if (!aluno) {
+            alert('Aluno não encontrado!');
+            return;
+        }
+
+        document.getElementById('dossieNomeAluno').innerText = `🎓 Dossiê: ${aluno.nome.toUpperCase()}`;
+        document.getElementById('dossieMatricula').innerText = aluno.matricula || 'N/A';
+        document.getElementById('dossieCpf').innerText = aluno.cpf || 'N/A';
+        document.getElementById('dossieNivel').innerText = aluno.ensino || 'N/A';
+        document.getElementById('dossieTelefone').innerText = aluno.telefone || 'Não Informado';
+
+        const dadosPresenca = obterDadosPresencaCompleta(aluno.cpf, aluno.ultimaPresenca);
+        const statusInfo = obterStatusPedagógico(aluno, dadosPresenca);
+        
+        const dataFormatada = dadosPresenca.data ? dadosPresenca.data.split('-').reverse().join('/') : 'Sem registros';
+        document.getElementById('dossieUltimaPresenca').innerHTML = dadosPresenca.data ? 
+            `${dataFormatada}<br><small style="color:#666;">${dadosPresenca.disciplina} às ${dadosPresenca.horario}</small>` : 
+            'Nunca esteve';
+
+        document.getElementById('dossieStatusBadge').innerHTML = statusInfo.html;
+
+        document.getElementById('dossieDiasPresente').innerText = dadosPresenca.totalDiasPresente;
+        document.getElementById('dossieDiasAfastado').innerText = statusInfo.diasAusente === 999 ? 'Indeterminado' : `${statusInfo.diasAusente} dias`;
+
+        const isFund = aluno.ensino && aluno.ensino.toLowerCase().includes('fund');
+        const listaDisc = isFund ? disciplinasFundamental : disciplinasMedio;
+        const listaEtapas = isFund ? etapasFundamental : etapasMedio;
+        const historico = aluno.historico || {};
+
+        let totalEtapasTotal = 0;
+        let totalEtapasConcluidas = 0;
+
+        const tbodyDisc = document.getElementById('dossieTabelaDisciplinas');
+        tbodyDisc.innerHTML = '';
+
+        listaDisc.forEach(disc => {
+            const historicoDisc = historico[disc] || [];
+            let concluidasStr = [];
+            let pendentesStr = [];
+
+            listaEtapas.forEach((etapaNome, idx) => {
+                if (disc === "Mundo do Trabalho" && idx > 0) return;
+                totalEtapasTotal++;
+
+                if (historicoDisc[idx] === true) {
+                    totalEtapasConcluidas++;
+                    concluidasStr.push(etapaNome);
+                } else {
+                    pendentesStr.push(etapaNome);
+                }
+            });
+
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><strong>${disc.toUpperCase()}</strong></td>
+                <td style="color: #155724; font-weight: bold;">${concluidasStr.length > 0 ? concluidasStr.join(', ') : '-'}</td>
+                <td style="color: #721c24;">${pendentesStr.length > 0 ? pendentesStr.join(', ') : '✅ Todas Concluídas'}</td>
+            `;
+            tbodyDisc.appendChild(tr);
+        });
+
+        const pct = totalEtapasTotal > 0 ? Math.round((totalEtapasConcluidas / totalEtapasTotal) * 100) : 0;
+        document.getElementById('dossieBarraFill').style.width = `${pct}%`;
+        document.getElementById('dossieBarraTexto').innerText = `${pct}% Concluído (${totalEtapasConcluidas} de ${totalEtapasTotal} etapas)`;
+
+        const historicoGeral = JSON.parse(localStorage.getItem('historicoBuscaAtiva')) || {};
+        const listaHistorico = historicoGeral[cpf] || [];
+        const divHist = document.getElementById('dossieHistoricoContatos');
+        
+        if (listaHistorico.length === 0) {
+            divHist.innerHTML = '<em>Nenhum contato registrado até o momento.</em>';
+        } else {
+            divHist.innerHTML = listaHistorico.map(h => `
+                <div class="historico-item">
+                    <strong>${h.data} (${h.pedagogo || 'Pedagogo'}):</strong> ${h.texto}
+                </div>
+            `).join('');
+        }
+
+        document.getElementById('modalDossie').style.display = 'flex';
+    }
+
+    function abrirModalSenha() {
+        document.getElementById('modalSenha').style.display = 'flex';
+    }
+
+    function fecharModal(idModal) {
+        document.getElementById(idModal).style.display = 'none';
+    }
+
+    function salvarNovaSenha() {
+        const novaSenha = document.getElementById('novaSenhaInput').value.trim();
+        if (!novaSenha) {
+            alert('Por favor, informe uma senha válida.');
+            return;
+        }
+        localStorage.setItem('senhaPedagogo', novaSenha);
+        alert('Senha do pedagogo alterada com sucesso!');
+        document.getElementById('novaSenhaInput').value = '';
+        fecharModal('modalSenha');
+    }
+
+    function abrirModalBuscaAtiva(cpf, nome) {
+        document.getElementById('modalCpfAluno').value = cpf;
+        document.getElementById('modalNomeAluno').innerText = `Busca Ativa - ${nome}`;
+        
+        const historicoGeral = JSON.parse(localStorage.getItem('historicoBuscaAtiva')) || {};
+        const listaHistorico = historicoGeral[cpf] || [];
+        
+        const divHist = document.getElementById('historicoContatos');
+        if (listaHistorico.length === 0) {
+            divHist.innerHTML = '<em>Nenhum contato registrado ainda.</em>';
+        } else {
+            divHist.innerHTML = listaHistorico.map(h => `
+                <div class="historico-item">
+                    <strong>${h.data} (${h.pedagogo || 'Pedagogo'}):</strong> ${h.texto}
+                </div>
+            `).join('');
+        }
+
+        document.getElementById('modalBuscaAtiva').style.display = 'flex';
+    }
+
+    function salvarRegistroContato() {
+        const cpf = document.getElementById('modalCpfAluno').value;
+        const texto = document.getElementById('textoContato').value.trim();
+        const nomePedagogo = document.getElementById('nomePedagogoExibicao').innerText;
+
+        if (!texto) {
+            alert('Digite um resumo do contato realizado.');
+            return;
+        }
+
+        let historicoGeral = JSON.parse(localStorage.getItem('historicoBuscaAtiva')) || {};
+        if (!historicoGeral[cpf]) historicoGeral[cpf] = [];
+
+        const agora = new Date();
+        const dataHojeStr = agora.toLocaleDateString('pt-BR');
+        const dataISO = agora.toISOString();
+
+        historicoGeral[cpf].unshift({ 
+            data: dataHojeStr, 
+            dataISO: dataISO, 
+            texto: texto, 
+            pedagogo: nomePedagogo 
+        });
+
+        localStorage.setItem('historicoBuscaAtiva', JSON.stringify(historicoGeral));
+        document.getElementById('textoContato').value = '';
+        
+        fecharModal('modalBuscaAtiva');
+        carregarMetricasIniciais();
+        renderizarTabela();
+        alert('Contato registrado! O aluno entrou na aba "Em Acompanhamento" por 5 dias úteis.');
+    }
+
+    function fazerLogout() {
+        sessionStorage.clear();
+        window.location.href = 'index.html'; // Atualizado para index.html
+    }
+
+    window.onclick = function(event) {
+        if (event.target.classList.contains('modal')) {
+            event.target.style.display = 'none';
+        }
+    }
+</script>
+</body>
+</html>

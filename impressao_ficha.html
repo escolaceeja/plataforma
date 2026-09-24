@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Impressão - Ficha de Atendimento do Estudante - CEEJA Linhares</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: Arial, Helvetica, sans-serif; background-color: #f4f6f9; color: #000; padding: 20px; }
+        
+        .container-filtros { max-width: 900px; margin: 0 auto 20px auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        .titulo-pagina { text-align: center; color: #003366; margin-bottom: 15px; font-size: 18px; font-weight: bold; }
+        
+        .grid-filtros { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin-bottom: 15px; }
+        .campo-grupo { display: flex; flex-direction: column; gap: 5px; position: relative; }
+        .campo-grupo label { font-size: 13px; font-weight: bold; color: #555; }
+        .campo-grupo input, .campo-grupo select { padding: 10px; border: 1px solid #ccc; border-radius: 5px; font-size: 14px; background: white; width: 100%; text-transform: uppercase; }
+
+        .campo-obs-full { grid-column: 1 / -1; }
+
+        .banner-alerta-bloqueio {
+            grid-column: 1 / -1;
+            background-color: #fff3cd;
+            border: 1px solid #ffeeba;
+            border-left: 5px solid #dc3545;
+            color: #856404;
+            padding: 12px 15px;
+            border-radius: 5px;
+            font-size: 13px;
+            display: none;
+        }
+        .banner-alerta-bloqueio strong { color: #dc3545; display: block; margin-bottom: 5px; font-size: 14px; }
+        .banner-alerta-bloqueio ul { margin-left: 20px; margin-top: 5px; text-transform: uppercase; }
+        .banner-alerta-bloqueio li { margin-bottom: 3px; font-weight: bold; color: #333; }
+        
+        .resultado-busca { position: absolute; top: 100%; left: 0; right: 0; background: white; border: 1px solid #ccc; border-top: none; border-radius: 0 0 5px 5px; max-height: 200px; overflow-y: auto; z-index: 1000; box-shadow: 0 4px 6px rgba(0,0,0,0.1); display: none; }
+        .item-resultado { padding: 10px; cursor: pointer; border-bottom: 1px solid #f0f0f0; font-size: 13px; text-transform: uppercase; }
+        .item-resultado:hover { background-color: #e8f0fe; }
+
+        .botoes-acao { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #eee; padding-top: 15px; flex-wrap: wrap; gap: 10px; }
+        .grupo-botoes-direita { display: flex; gap: 10px; flex-wrap: wrap; }
+        .btn { padding: 10px 18px; border-radius: 5px; border: none; cursor: pointer; font-weight: bold; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; font-size: 14px; }
+        .btn-voltar { background: #6c757d; color: white; }
+        .btn-limpar { background: #ffc107; color: #212529; }
+        .btn-em-branco { background: #17a2b8; color: white; }
+        .btn-imprimir { background: #28a745; color: white; }
+        .btn-imprimir:disabled { background: #ccc; cursor: not-allowed; }
+
+        .folha-impressao { max-width: 800px; margin: 0 auto; background: white; padding: 20px 20px 20px 35px; border: 1px solid #000; display: none; font-size: 11px; line-height: 1.2; text-transform: uppercase; }
+        
+        .pagina-ficha { width: 100%; box-sizing: border-box; height: 260mm; display: flex; flex-direction: column; justify-content: space-between; }
+        .pagina-2 { page-break-before: always; margin-top: 20px; }
+
+        .container-tabela-flex { flex-grow: 1; display: flex; flex-direction: column; }
+
+        .cabecalho-oficial { text-align: center; font-weight: bold; font-size: 11px; margin-bottom: 8px; line-height: 1.2; display: flex; flex-direction: column; align-items: center; }
+        .brasao-es-img { width: 50px; height: auto; margin-bottom: 4px; }
+        .cabecalho-oficial .titulo-ficha { font-size: 13px; margin-top: 4px; text-decoration: underline; }
+
+        .tabela-dados { width: 100%; border-collapse: collapse; margin-bottom: 8px; table-layout: fixed; }
+        .tabela-dados td { border: 1px solid #000; padding: 4px 6px; vertical-align: middle; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .checkbox-container { display: inline-flex; align-items: center; gap: 4px; }
+        .box-check { width: 12px; height: 12px; border: 1px solid #000; display: inline-block; text-align: center; line-height: 10px; font-size: 10px; font-weight: bold; }
+
+        .tabela-atendimento { width: 100%; border-collapse: collapse; flex-grow: 1; }
+        .tabela-atendimento th { border: 1px solid #000; padding: 3px; text-align: center; font-size: 10px; background-color: #f0f0f0; font-weight: bold; }
+        .tabela-atendimento td { border: 1px solid #000; padding: 0px 4px; text-align: center; font-size: 10px; height: 11px; }
+
+        .box-etapa-unica { border: 1px solid #000; padding: 10px; font-size: 10px; margin-top: 10px; margin-bottom: 10px; }
+        .box-etapa-header { display: flex; justify-content: space-between; margin-bottom: 6px; font-weight: bold; border-bottom: 1px solid #000; padding-bottom: 4px; }
+        .tabela-notas { width: 100%; border-collapse: collapse; margin-top: 6px; margin-bottom: 8px; }
+        .tabela-notas td, .tabela-notas th { border: 1px solid #000; text-align: center; padding: 5px 4px; font-size: 10px; }
+
+        .grid-retangulos-fechamento { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 6px; align-items: center; }
+        .retangulo-campo { border: 1px solid #000; padding: 6px 10px; display: flex; justify-content: space-between; align-items: center; font-weight: bold; font-size: 10px; min-height: 46px; }
+        .caixa-nota-escrita { width: 110px; height: 32px; border: 1px solid #000; background: #fff; display: flex; align-items: center; justify-content: center; font-weight: normal; font-size: 11px; }
+
+        .rodape-assinaturas { margin-top: 35px; margin-bottom: 5px; display: grid; grid-template-columns: 1fr 1fr; gap: 40px; text-align: center; }
+        .linha-assinatura { border-top: 1px solid #000; padding-top: 6px; font-size: 10px; font-weight: bold; }
+
+        @media print {
+            body { background: white; padding: 0; }
+            .container-filtros { display: none !important; }
+            .folha-impressao { display: block !important; border: none; width: 100%; max-width: 100%; padding: 0; margin: 0; }
+            .pagina-ficha { height: 265mm; }
+            .pagina-2 { page-break-before: always; margin-top: 0; padding-top: 2mm; }
+            
+            @page { 
+                size: A4 portrait; 
+                margin-top: 10mm;
+                margin-right: 10mm;
+                margin-bottom: 15mm;
+                margin-left: 18mm;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container-filtros">
+        <div class="titulo-pagina">📄 Impressão - Ficha de Atendimento do Estudante</div>
+        
+        <div class="grid-filtros">
+            <div class="campo-grupo">
+                <label for="inputBuscaAluno">Buscar Aluno (Opcional):</label>
+                <input type="text" id="inputBuscaAluno" placeholder="Nome, CPF ou Matrícula..." oninput="buscarAlunos()" autocomplete="off" maxlength="60">
+                <div id="resultadoBusca" class="resultado-busca"></div>
+            </div>
+
+            <div class="campo-grupo">
+                <label for="selectDisciplina">Componente Curricular (Opcional):</label>
+                <select id="selectDisciplina" onchange="aoMudarDisciplina()">
+                    <option value="">-- SELECIONE O COMPONENTE --</option>
+                </select>
+            </div>
+
+            <div class="campo-grupo">
+                <label for="selectEtapa">Etapa Liberada para Impressão:</label>
+                <select id="selectEtapa" onchange="gerarFicha()" disabled>
+                    <option value="">-- SELECIONE A ETAPA --</option>
+                </select>
+            </div>
+
+            <div id="bannerBloqueio" class="banner-alerta-bloqueio">
+                <strong id="tituloBloqueio">⚠️ ETAPA BLOQUEADA!</strong>
+                <span id="textoDescricaoBloqueio"></span>
+                <ul id="listaPendenciasBloqueio"></ul>
+            </div>
+
+            <div class="campo-grupo campo-obs-full">
+                <label for="inputObsManual">Observação da Ficha (Máx. 80 Caracteres):</label>
+                <input type="text" id="inputObsManual" placeholder="DIGITE UMA OBSERVAÇÃO PARA IMPRESSÃO..." oninput="atualizarObservacaoFicha()" maxlength="80">
+            </div>
+        </div>
+
+        <div class="botoes-acao">
+            <a href="painel_secretaria.html" class="btn btn-voltar">← Voltar ao Painel</a>
+            <div class="grupo-botoes-direita">
+                <button type="button" class="btn btn-limpar" onclick="limparENovaImpressao()">🔄 Limpar</button>
+                <button id="btnEmBranco" class="btn btn-em-branco" onclick="gerarFichaEmBranco()">📄 Gerar Ficha em Branco</button>
+                <button id="btnImprimir" class="btn btn-imprimir" onclick="window.print()" disabled>🖨️ Imprimir Ficha Completa</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="folhaImpressao" class="folha-impressao">
+        
+        <div class="pagina-ficha pagina-1">
+            <div class="cabecalho-oficial">
+                <img src="brasao.png" alt="Brasão ES" class="brasao-es-img" onerror="this.style.display='none'">
+                GOVERNO DO ESTADO DO ESPÍRITO SANTO<br>
+                SECRETARIA DE ESTADO DA EDUCAÇÃO<br>
+                CEEJA DE LINHARES<br>
+                <div class="titulo-ficha">FICHA DE ATENDIMENTO DO ESTUDANTE</div>
+            </div>
+
+            <table class="tabela-dados">
+                <tr>
+                    <td style="width: 65%;"><strong>ESTUDANTE:</strong> <span id="fichaNome"></span></td>
+                    <td style="width: 35%;"><strong>CPF:</strong> <span id="fichaCpf"></span></td>
+                </tr>
+                <tr>
+                    <td style="width: 65%;"><strong>COMPONENTE CURRICULAR:</strong> <span id="fichaDisciplina" style="font-weight: bold;"></span></td>
+                    <td style="width: 35%;"><strong>TELEFONE:</strong> <span id="fichaTelefone"></span></td>
+                </tr>
+                <tr>
+                    <td style="width: 65%;"><strong>OBSERVAÇÃO:</strong> <span id="fichaObs"></span></td>
+                    <td style="width: 35%;"><strong>MATRÍCULA:</strong> <span id="fichaMatricula"></span></td>
+                </tr>
+                <tr>
+                    <td style="width: 50%;">
+                        <div class="checkbox-container">
+                            <span id="checkFundamental" class="box-check"></span> <strong id="textoFundamental">ENSINO FUNDAMENTAL</strong>
+                        </div>
+                    </td>
+                    <td style="width: 50%;">
+                        <div class="checkbox-container">
+                            <span id="checkMedio" class="box-check"></span> <strong id="textoMedio">ENSINO MÉDIO</strong>
+                        </div>
+                    </td>
+                </tr>
+            </table>
+
+            <div class="container-tabela-flex">
+                <table class="tabela-atendimento">
+                    <thead>
+                        <tr>
+                            <th style="width: 8%;">DIA</th>
+                            <th style="width: 8%;">UF</th>
+                            <th style="width: 8%;">CICLO</th>
+                            <th style="width: 10%;">TURNO</th>
+                            <th style="width: 32%;">ASSINATURA DO ESTUDANTE</th>
+                            <th style="width: 34%;">OBSERVAÇÕES SOBRE O ATENDIMENTO</th>
+                        </tr>
+                    </thead>
+                    <tbody id="corpoTabelaPag1"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="pagina-ficha pagina-2">
+            <div class="container-tabela-flex">
+                <table class="tabela-atendimento">
+                    <thead>
+                        <tr>
+                            <th style="width: 8%;">DIA</th>
+                            <th style="width: 8%;">UF</th>
+                            <th style="width: 8%;">CICLO</th>
+                            <th style="width: 10%;">TURNO</th>
+                            <th style="width: 32%;">ASSINATURA DO ESTUDANTE</th>
+                            <th style="width: 34%;">OBSERVAÇÕES SOBRE O ATENDIMENTO</th>
+                        </tr>
+                    </thead>
+                    <tbody id="corpoTabelaPag2"></tbody>
+                </table>
+            </div>
+
+            <div id="quadroNotaEtapa" class="box-etapa-unica"></div>
+
+            <div class="rodape-assinaturas">
+                <div class="linha-assinatura">PROFESSOR(A)</div>
+                <div class="linha-assinatura">PEDAGOGA(O)</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- FIREBASE CLOUD -->
+    <script src="firebase-cloud.js"></script>
+
+    <!-- CÓDIGO ORIGINAL DA PÁGINA -->
+    <script id="ceeja-app-script" type="text/plain">
+        let alunoSelecionado = null;
+
+        const todasDisciplinas = [
+            "Língua Portuguesa", "Matemática", "História", "Geografia", "Ciências", 
+            "Arte", "Língua Inglesa", "Biologia", "Física", "Química", "Filosofia", 
+            "Sociologia", "Mundo do Trabalho"
+        ];
+
+        const disciplinasFundamental = [
+            "Língua Portuguesa", "Matemática", "História", "Geografia", 
+            "Ciências", "Arte", "Língua Inglesa", "Mundo do Trabalho"
+        ];
+
+        const disciplinasMedio = [
+            "Língua Portuguesa", "Matemática", "História", "Geografia", 
+            "Biologia", "Física", "Química", "Filosofia", "Sociologia", 
+            "Arte", "Língua Inglesa", "Mundo do Trabalho"
+        ];
+
+        const etapasFundamental = ["5ª Etapa / 6º Ano", "6ª Etapa / 7º Ano", "7ª Etapa / 8º Ano", "8ª Etapa / 9º Ano"];
+        const etapasMedio = ["1ª Etapa / 1ª Série", "2ª Etapa / 2ª Série", "3ª Etapa / 3ª Série"];
+
+        document.addEventListener('DOMContentLoaded', carregarDisciplinasIniciais);
+
+        function carregarDisciplinasIniciais() {
+            const selectDisc = document.getElementById('selectDisciplina');
+            selectDisc.innerHTML = '<option value="">-- SELECIONE O COMPONENTE --</option>';
+            todasDisciplinas.forEach(disc => {
+                const opt = document.createElement('option');
+                opt.value = disc;
+                opt.textContent = disc.toUpperCase();
+                selectDisc.appendChild(opt);
+            });
+        }
+
+        function obterUFsPorEtapa(ensino, etapaNome, disciplina) {
+            const discUpper = (disciplina || '').toUpperCase();
+
+            if (ensino === 'Médio') {
+                if (["ARTE", "FILOSOFIA", "SOCIOLOGIA", "LÍNGUA INGLESA", "INGLÊS"].includes(discUpper)) {
+                    if (etapaNome.includes("1ª")) return ["UF 1"];
+                    if (etapaNome.includes("2ª")) return ["UF 2"];
+                    if (etapaNome.includes("3ª")) return ["UF 3"];
+                }
+
+                if (discUpper === "MUNDO DO TRABALHO") {
+                    return ["UF 1"];
+                }
+
+                if (["HISTÓRIA", "GEOGRAFIA", "BIOLOGIA", "QUÍMICA", "FÍSICA"].includes(discUpper)) {
+                    if (etapaNome.includes("1ª")) return ["UF 1", "UF 2"];
+                    if (etapaNome.includes("2ª")) return ["UF 3", "UF 4", "UF 5"];
+                    if (etapaNome.includes("3ª")) return ["UF 6", "UF 7", "UF 8"];
+                }
+
+                if (etapaNome.includes("1ª")) return ["UF 1", "UF 2", "UF 3"];
+                if (etapaNome.includes("2ª")) return ["UF 4", "UF 5", "UF 6"];
+                if (etapaNome.includes("3ª")) return ["UF 7", "UF 8", "UF 9"];
+
+            } else {
+                if (["ARTE", "LÍNGUA INGLESA", "INGLÊS"].includes(discUpper)) {
+                    if (etapaNome.includes("5ª")) return ["UF 1"];
+                    if (etapaNome.includes("6ª")) return ["UF 2"];
+                    if (etapaNome.includes("7ª")) return ["UF 3"];
+                    if (etapaNome.includes("8ª")) return ["UF 4"];
+                }
+                
+                if (discUpper === "MUNDO DO TRABALHO") {
+                    return ["UF 1"];
+                }
+
+                if (etapaNome.includes("5ª")) return ["UF 1", "UF 2"];
+                if (etapaNome.includes("6ª")) return ["UF 3", "UF 4"];
+                if (etapaNome.includes("7ª")) return ["UF 5", "UF 6", "UF 7"];
+                if (etapaNome.includes("8ª")) return ["UF 8", "UF 9", "UF 10"];
+            }
+
+            return ["UF 1", "UF 2", "UF 3"];
+        }
+
+        function formatarCPF(cpf) {
+            if (!cpf) return '';
+            const apenasNumeros = cpf.replace(/\D/g, '');
+            if (apenasNumeros.length !== 11) return cpf;
+            return apenasNumeros.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+        }
+
+        function atualizarObservacaoFicha() {
+            const input = document.getElementById('inputObsManual');
+            input.value = input.value.toUpperCase();
+            const textoObs = input.value.slice(0, 80);
+            document.getElementById('fichaObs').textContent = textoObs;
+        }
+
+        function buscarAlunos() {
+            const campo = document.getElementById('inputBuscaAluno');
+            campo.value = campo.value.toUpperCase();
+            const termo = campo.value.toLowerCase().replace(/[\.\\-\s]/g, '');
+            const painelResultados = document.getElementById('resultadoBusca');
+
+            if (!campo.value.trim()) {
+                resetarFormulario();
+                return;
+            }
+
+            const todosAlunos = JSON.parse(localStorage.getItem('cadastroAlunos')) || [];
+            
+            const filtrados = todosAlunos.filter(a => {
+                const nome = (a.nome || '').toLowerCase();
+                const cpf = (a.cpf || '').replace(/[\.\\-\s]/g, '');
+                const matricula = (a.matricula || '').toLowerCase();
+                return nome.includes(campo.value.toLowerCase()) || cpf.includes(termo) || matricula.includes(campo.value.toLowerCase());
+            });
+
+            painelResultados.innerHTML = '';
+
+            if (filtrados.length === 0) {
+                painelResultados.innerHTML = '<div class="item-resultado" style="color:#888;">NENHUM ALUNO ENCONTRADO</div>';
+                painelResultados.style.display = 'block';
+                return;
+            }
+
+            filtrados.forEach(aluno => {
+                const item = document.createElement('div');
+                item.className = 'item-resultado';
+                item.innerHTML = `<strong>${aluno.nome.toUpperCase()}</strong><br><small>CPF: ${formatarCPF(aluno.cpf)} | MATRÍCULA: ${aluno.matricula ? aluno.matricula.toUpperCase() : 'N/A'}</small>`;
+                item.onclick = function() { selecionarAluno(aluno); };
+                painelResultados.appendChild(item);
+            });
+
+            painelResultados.style.display = 'block';
+        }
+
+        function selecionarAluno(aluno) {
+            alunoSelecionado = aluno;
+            document.getElementById('inputBuscaAluno').value = `${aluno.nome.toUpperCase()} (CPF: ${formatarCPF(aluno.cpf)})`;
+            document.getElementById('resultadoBusca').style.display = 'none';
+
+            const obsLimpa = (aluno.observacao || '').toUpperCase().slice(0, 80);
+            document.getElementById('inputObsManual').value = obsLimpa;
+
+            const selectDisc = document.getElementById('selectDisciplina');
+            selectDisc.innerHTML = '<option value="">-- SELECIONE O COMPONENTE --</option>';
+
+            const listaDisciplinas = (aluno.ensino === 'Fundamental') ? disciplinasFundamental : disciplinasMedio;
+            listaDisciplinas.forEach(disc => {
+                const opt = document.createElement('option');
+                opt.value = disc;
+                opt.textContent = disc.toUpperCase();
+                selectDisc.appendChild(opt);
+            });
+
+            atualizarEtapasPorAluno();
+        }
+
+        function obterPendenciasEtapaAnterior(historico, listaDisciplinas, indiceEtapaAnterior) {
+            if (indiceEtapaAnterior < 0) return [];
+            
+            let pendencias = [];
+            for (let d = 0; d < listaDisciplinas.length; d++) {
+                const discNome = listaDisciplinas[d];
+                if (discNome === "Mundo do Trabalho" && indiceEtapaAnterior > 0) continue;
+                
+                const estadosDisc = historico[discNome] || [];
+                if (!estadosDisc[indiceEtapaAnterior]) {
+                    pendencias.push(discNome);
+                }
+            }
+            return pendencias;
+        }
+
+        function atualizarEtapasPorAluno() {
+            const selectEtapa = document.getElementById('selectEtapa');
+            const bannerBloqueio = document.getElementById('bannerBloqueio');
+            const textoDescricao = document.getElementById('textoDescricaoBloqueio');
+            const listaPendencias = document.getElementById('listaPendenciasBloqueio');
+
+            selectEtapa.innerHTML = '<option value="">-- SELECIONE A ETAPA --</option>';
+            bannerBloqueio.style.display = 'none';
+            listaPendencias.innerHTML = '';
+
+            const disciplina = document.getElementById('selectDisciplina').value;
+            if (!disciplina || !alunoSelecionado) {
+                selectEtapa.disabled = true;
+                return;
+            }
+
+            const isFundamental = alunoSelecionado.ensino === 'Fundamental';
+            const listaDisciplinas = isFundamental ? disciplinasFundamental : disciplinasMedio;
+            const listaEtapasTotal = isFundamental ? [...etapasFundamental] : [...etapasMedio];
+            const historico = alunoSelecionado.historico || {};
+
+            const historicoDisc = historico[disciplina] || [];
+            let idxEtapaAtual = -1;
+
+            if (disciplina === "Mundo do Trabalho") {
+                idxEtapaAtual = (historicoDisc[0] === true) ? -1 : 0;
+            } else {
+                for (let i = 0; i < listaEtapasTotal.length; i++) {
+                    if (!historicoDisc[i]) {
+                        idxEtapaAtual = i;
+                        break;
+                    }
+                }
+            }
+
+            if (idxEtapaAtual === -1) {
+                selectEtapa.innerHTML = '<option value="">-- DISCIPLINA TOTALMENTE CONCLUÍDA --</option>';
+                selectEtapa.disabled = true;
+                document.getElementById('folhaImpressao').style.display = 'none';
+                document.getElementById('btnImprimir').disabled = true;
+                return;
+            }
+
+            const pendencias = obterPendenciasEtapaAnterior(historico, listaDisciplinas, idxEtapaAtual - 1);
+
+            if (pendencias.length > 0) {
+                const etapaAnteriorNome = listaEtapasTotal[idxEtapaAtual - 1];
+                const etapaBloqueadaNome = listaEtapasTotal[idxEtapaAtual];
+
+                selectEtapa.innerHTML = `<option value="">-- ETAPA BLOQUEADA --</option>`;
+                selectEtapa.disabled = true;
+
+                textoDescricao.textContent = `Para liberar a impressão da ${etapaBloqueadaNome} na disciplina de ${disciplina.toUpperCase()}, o estudante precisa concluir as seguintes disciplinas da ${etapaAnteriorNome}:`;
+                
+                pendencias.forEach(p => {
+                    const li = document.createElement('li');
+                    li.textContent = p;
+                    listaPendencias.appendChild(li);
+                });
+
+                bannerBloqueio.style.display = 'block';
+
+            } else {
+                const etapaLiberada = listaEtapasTotal[idxEtapaAtual];
+                const opt = document.createElement('option');
+                opt.value = etapaLiberada;
+                opt.textContent = etapaLiberada.toUpperCase();
+                selectEtapa.appendChild(opt);
+                selectEtapa.disabled = false;
+            }
+
+            document.getElementById('folhaImpressao').style.display = 'none';
+            document.getElementById('btnImprimir').disabled = true;
+        }
+
+        function aoMudarDisciplina() {
+            const disc = document.getElementById('selectDisciplina').value;
+
+            if (alunoSelecionado && disc) {
+                atualizarEtapasPorAluno();
+            } else {
+                const selectEtapa = document.getElementById('selectEtapa');
+                selectEtapa.innerHTML = '<option value="">-- SELECIONE A ETAPA --</option>';
+                selectEtapa.disabled = true;
+                document.getElementById('bannerBloqueio').style.display = 'none';
+            }
+        }
+
+        function construirLinhasTabela() {
+            const pag1 = document.getElementById('corpoTabelaPag1');
+            const pag2 = document.getElementById('corpoTabelaPag2');
+            pag1.innerHTML = '';
+            pag2.innerHTML = '';
+
+            for (let i = 0; i < 43; i++) {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>&nbsp;</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                `;
+
+                if (i < 21) {
+                    pag1.appendChild(tr);
+                } else {
+                    pag2.appendChild(tr);
+                }
+            }
+        }
+
+        function gerarFicha() {
+            const disciplina = document.getElementById('selectDisciplina').value;
+            const etapa = document.getElementById('selectEtapa').value;
+            const folha = document.getElementById('folhaImpressao');
+            const btnImprimir = document.getElementById('btnImprimir');
+
+            if (!alunoSelecionado || !disciplina || !etapa) {
+                folha.style.display = 'none';
+                btnImprimir.disabled = true;
+                return;
+            }
+
+            document.getElementById('fichaNome').textContent = (alunoSelecionado.nome || '').toUpperCase().slice(0, 45);
+            document.getElementById('fichaCpf').textContent = formatarCPF(alunoSelecionado.cpf);
+            document.getElementById('fichaDisciplina').textContent = disciplina.toUpperCase().slice(0, 35);
+            document.getElementById('fichaTelefone').textContent = (alunoSelecionado.telefone || '').slice(0, 15);
+            document.getElementById('fichaObs').textContent = document.getElementById('inputObsManual').value.toUpperCase().slice(0, 80);
+            document.getElementById('fichaMatricula').textContent = (alunoSelecionado.matricula || '').toUpperCase().slice(0, 20);
+
+            const isFundamental = alunoSelecionado.ensino === 'Fundamental';
+            document.getElementById('checkFundamental').textContent = isFundamental ? 'X' : '';
+            document.getElementById('checkMedio').textContent = !isFundamental ? 'X' : '';
+
+            if (isFundamental) {
+                document.getElementById('textoFundamental').textContent = `ENSINO FUNDAMENTAL - ${etapa.toUpperCase()}`;
+                document.getElementById('textoMedio').textContent = 'ENSINO MÉDIO';
+            } else {
+                document.getElementById('textoFundamental').textContent = 'ENSINO FUNDAMENTAL';
+                document.getElementById('textoMedio').textContent = `ENSINO MÉDIO - ${etapa.toUpperCase()}`;
+            }
+
+            construirLinhasTabela();
+
+            const ufs = obterUFsPorEtapa(alunoSelecionado.ensino, etapa, disciplina);
+            gerarQuadroNotas(etapa.toUpperCase(), ufs);
+
+            folha.style.display = 'block';
+            btnImprimir.disabled = false;
+        }
+
+        function gerarFichaEmBranco() {
+            const disciplina = document.getElementById('selectDisciplina').value;
+            const etapa = document.getElementById('selectEtapa').value;
+
+            document.getElementById('fichaNome').textContent = '';
+            document.getElementById('fichaCpf').textContent = '';
+            document.getElementById('fichaDisciplina').textContent = disciplina ? disciplina.toUpperCase().slice(0, 35) : '';
+            document.getElementById('fichaTelefone').textContent = '';
+            document.getElementById('fichaObs').textContent = document.getElementById('inputObsManual').value.toUpperCase().slice(0, 80);
+            document.getElementById('fichaMatricula').textContent = '';
+
+            document.getElementById('checkFundamental').textContent = '';
+            document.getElementById('checkMedio').textContent = '';
+            document.getElementById('textoFundamental').textContent = 'ENSINO FUNDAMENTAL';
+            document.getElementById('textoMedio').textContent = 'ENSINO MÉDIO';
+
+            construirLinhasTabela();
+
+            let ufsEmBranco = ["UF ____", "UF ____", "UF ____"];
+            let etapaTextoEmBranco = '';
+
+            if (alunoSelecionado && etapa) {
+                ufsEmBranco = obterUFsPorEtapa(alunoSelecionado.ensino, etapa, disciplina);
+                etapaTextoEmBranco = etapa.toUpperCase();
+            }
+
+            gerarQuadroNotas(etapaTextoEmBranco, ufsEmBranco);
+
+            document.getElementById('folhaImpressao').style.display = 'block';
+            document.getElementById('btnImprimir').disabled = false;
+        }
+
+        function gerarQuadroNotas(etapaTexto, listaUFs) {
+            const quadroNotas = document.getElementById('quadroNotaEtapa');
+            let linhasUfNotas = '';
+            
+            listaUFs.forEach(ufNome => {
+                linhasUfNotas += `
+                    <tr>
+                        <td style="font-weight:bold;">${ufNome}</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                `;
+            });
+
+            quadroNotas.innerHTML = `
+                <div class="box-etapa-header">
+                    <span>ETAPA EM ESTUDO: <strong>${etapaTexto}</strong></span>
+                    <span>SITUAÇÃO DA ETAPA: <strong>EM ANDAMENTO</strong></span>
+                </div>
+                <table class="tabela-notas">
+                    <thead>
+                        <tr>
+                            <th style="width: 22%;">UNIDADE FORMATIVA</th>
+                            <th style="width: 15.5%;">70 PONTOS</th>
+                            <th style="width: 15.5%;">REC.</th>
+                            <th style="width: 15.5%;">30 PONTOS</th>
+                            <th style="width: 15.5%;">REC.</th>
+                            <th style="width: 16%;">TOTAL</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${linhasUfNotas}
+                    </tbody>
+                </table>
+
+                <div class="grid-retangulos-fechamento">
+                    <div class="retangulo-campo">
+                        <span>MÉDIA DA ETAPA:</span>
+                        <div class="caixa-nota-escrita"></div>
+                    </div>
+                    <div class="retangulo-campo">
+                        <span>DATA DE CONCLUSÃO:</span>
+                        <span style="font-weight: normal; font-size: 11px;">____/____/________</span>
+                    </div>
+                </div>
+            `;
+        }
+
+        function resetarFormulario() {
+            alunoSelecionado = null;
+            document.getElementById('resultadoBusca').style.display = 'none';
+            document.getElementById('inputObsManual').value = '';
+            document.getElementById('bannerBloqueio').style.display = 'none';
+            carregarDisciplinasIniciais();
+
+            const selectEtapa = document.getElementById('selectEtapa');
+            selectEtapa.innerHTML = '<option value="">-- SELECIONE A ETAPA --</option>';
+            selectEtapa.disabled = true;
+
+            document.getElementById('folhaImpressao').style.display = 'none';
+            document.getElementById('btnImprimir').disabled = true;
+        }
+
+        function limparENovaImpressao() {
+            document.getElementById('inputBuscaAluno').value = '';
+            resetarFormulario();
+            document.getElementById('inputBuscaAluno').focus();
+        }
+
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.campo-grupo')) {
+                document.getElementById('resultadoBusca').style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>
