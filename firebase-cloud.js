@@ -4,12 +4,19 @@
  * FIREBASE CLOUD
  * ============================================================
  *
- * Funções:
- * - Carrega dados do Firestore para o localStorage
- * - Salva alterações do localStorage no Firestore
- * - Exclui do Firestore quando um cadastro é excluído
- * - Mantém as páginas antigas funcionando
- * - Executa o código da página somente depois da sincronização
+ * Integra:
+ *
+ * localStorage <-> Firebase Firestore
+ *
+ * Mantém o sistema atual funcionando e permite:
+ *
+ * - cadastrar alunos no Firebase
+ * - carregar alunos do Firebase
+ * - acessar de outro dispositivo
+ * - sincronizar funcionários
+ * - sincronizar presença
+ * - sincronizar notas
+ * - sincronizar conclusão de curso
  *
  * ============================================================
  */
@@ -20,81 +27,89 @@
 
 
     /* =========================================================
-       CONFIGURAÇÃO FIREBASE
-       ========================================================= */
+       CONFIGURAÇÃO DO FIREBASE
+    ========================================================= */
 
     const firebaseConfig = {
-        apiKey: "AIzaSyAYa8tTEJ4raHcdBdDnFIZlF7y2LjTX8",
-        authDomain: "ceeja-linhares-sistema.firebaseapp.com",
-        projectId: "ceeja-linhares-sistema",
-        storageBucket: "ceeja-linhares-sistema.firebasestorage.app",
-        messagingSenderId: "791087995006",
-        appId: "1:791087995006:web:14c93bc02b36c73aa8602f"
+
+        apiKey:
+            "AIzaSyAYa8tTEJ4raHcdBdDnFIZlF7y2LjTX8",
+
+        authDomain:
+            "ceeja-linhares-sistema.firebaseapp.com",
+
+        projectId:
+            "ceeja-linhares-sistema",
+
+        storageBucket:
+            "ceeja-linhares-sistema.firebasestorage.app",
+
+        messagingSenderId:
+            "791087995006",
+
+        appId:
+            "1:791087995006:web:14c93bc02b36c73aa8602f"
+
     };
 
 
     /* =========================================================
        COLEÇÕES
-       ========================================================= */
+    ========================================================= */
 
     const COLLECTIONS = [
+
         "cadastroAlunos",
+
         "funcionariosCadastrados",
+
         "registrosPresenca",
+
         "registrosNotas",
+
         "registrosConclusaoCurso"
+
     ];
 
 
-    const GLOBAL_OBJECTS = [
-        "historicoBuscaAtiva",
-        "controleMatriculas"
-    ];
-
-
-    const SETTINGS = [
-        "senhaPedagogo",
-        "nomePedagogo"
-    ];
-
-
-    /*
-     * Guarda quais documentos já existiam no Firebase
-     * quando a página foi aberta.
-     *
-     * Isso permite identificar uma exclusão.
-     */
-
-    const idsConhecidos = {};
-
+    /* =========================================================
+       CONTROLE
+    ========================================================= */
 
     let firebasePronto = false;
-    let firebaseDB = null;
+
+    let firebaseErro = null;
+
     let sincronizando = {};
 
 
     /* =========================================================
-       CARREGAR SCRIPT DO FIREBASE
-       ========================================================= */
+       FUNÇÃO PARA CARREGAR OS SCRIPTS DO FIREBASE
+    ========================================================= */
 
-    function carregarScript(url) {
+    function carregarScript(src) {
 
         return new Promise(function (resolve, reject) {
 
-            const script = document.createElement("script");
+            const script =
+                document.createElement("script");
 
-            script.src = url;
+            script.src = src;
 
             script.onload = function () {
+
                 resolve();
+
             };
 
             script.onerror = function () {
+
                 reject(
                     new Error(
-                        "Não foi possível carregar: " + url
+                        "Não foi possível carregar: " + src
                     )
                 );
+
             };
 
             document.head.appendChild(script);
@@ -106,9 +121,13 @@
 
     /* =========================================================
        GARANTIR FIREBASE
-       ========================================================= */
+    ========================================================= */
 
     async function carregarFirebase() {
+
+        /*
+         * Firebase App
+         */
 
         if (!window.firebase) {
 
@@ -119,19 +138,8 @@
         }
 
 
-        if (
-            !window.firebase.firestore
-        ) {
-
-            await carregarScript(
-                "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"
-            );
-
-        }
-
-
         /*
-         * Autenticação anônima.
+         * Firebase Authentication
          */
 
         if (!window.firebase.auth) {
@@ -142,102 +150,36 @@
 
         }
 
-    }
-
-
-    /* =========================================================
-       INICIALIZAR FIREBASE
-       ========================================================= */
-
-    async function inicializarFirebase() {
-
-        await carregarFirebase();
-
-
-        let app;
-
-
-        if (
-            window.firebase.apps &&
-            window.firebase.apps.length > 0
-        ) {
-
-            app =
-                window.firebase.app();
-
-        } else {
-
-            app =
-                window.firebase.initializeApp(
-                    firebaseConfig
-                );
-
-        }
-
 
         /*
-         * Login anônimo.
+         * Firebase Firestore
          */
 
-        try {
+        if (!window.firebase.firestore) {
 
-            if (
-                window.firebase.auth &&
-                !window.firebase.auth().currentUser
-            ) {
-
-                await window.firebase
-                    .auth()
-                    .signInAnonymously();
-
-            }
-
-        } catch (erroAuth) {
-
-            console.warn(
-                "Firebase Auth anônimo:",
-                erroAuth
+            await carregarScript(
+                "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"
             );
 
         }
-
-
-        firebaseDB =
-            app.firestore();
-
-
-        window.CEEJAFirebase = {
-
-            app: app,
-
-            db: firebaseDB,
-
-            firebaseConfig: firebaseConfig
-
-        };
-
-
-        return firebaseDB;
 
     }
 
 
     /* =========================================================
        GERAR ID DO DOCUMENTO
-       ========================================================= */
+    ========================================================= */
 
     function gerarId(
-        nomeColecao,
+        colecao,
         aluno,
         indice
     ) {
 
-        let id;
+        let id = "";
 
 
-        if (
-            nomeColecao === "cadastroAlunos"
-        ) {
+        if (colecao === "cadastroAlunos") {
 
             id =
                 aluno.cpf ||
@@ -246,9 +188,9 @@
 
         }
 
-
         else if (
-            nomeColecao === "funcionariosCadastrados"
+            colecao ===
+            "funcionariosCadastrados"
         ) {
 
             id =
@@ -258,37 +200,50 @@
 
         }
 
-
         else if (
-            nomeColecao === "registrosPresenca"
+            colecao ===
+            "registrosPresenca"
         ) {
 
             id =
                 aluno.id ||
                 (
-                    (aluno.cpfAluno || "aluno") +
-                    "_" +
-                    (aluno.data || "") +
-                    "_" +
-                    (aluno.hora || aluno.horario || "") +
-                    "_" +
-                    indice
+                    String(
+                        aluno.cpfAluno || "aluno"
+                    )
+                    + "_" +
+                    String(
+                        aluno.data || ""
+                    )
+                    + "_" +
+                    String(
+                        aluno.hora ||
+                        aluno.horario ||
+                        ""
+                    )
+                    + "_" +
+                    String(indice)
                 );
 
         }
-
 
         else {
 
             id =
                 aluno.id ||
-                aluno.cpf ||
-                aluno.cpfAluno ||
                 (
-                    "registro_" +
-                    Date.now() +
-                    "_" +
-                    indice
+                    String(
+                        aluno.cpfAluno ||
+                        aluno.cpf ||
+                        "registro"
+                    )
+                    + "_" +
+                    String(
+                        aluno.timestamp ||
+                        Date.now()
+                    )
+                    + "_" +
+                    String(indice)
                 );
 
         }
@@ -302,8 +257,8 @@
 
 
     /* =========================================================
-       REMOVER CAMPOS INTERNOS
-       ========================================================= */
+       LIMPAR DADOS INTERNOS
+    ========================================================= */
 
     function limparDados(objeto) {
 
@@ -311,9 +266,7 @@
             ...objeto
         };
 
-
         delete copia._firestoreId;
-
 
         return copia;
 
@@ -322,52 +275,34 @@
 
     /* =========================================================
        CARREGAR COLEÇÃO DO FIREBASE
-       ========================================================= */
+    ========================================================= */
 
     async function carregarColecao(
-        nomeColecao
+        db,
+        nome
     ) {
 
-        const referencia =
-            firebaseDB
-                .collection(nomeColecao);
-
-
         const snapshot =
-            await referencia.get();
+            await db
+                .collection(nome)
+                .get();
 
 
         const dados = [];
 
 
-        snapshot.forEach(function (documento) {
+        snapshot.forEach(function (doc) {
 
             dados.push({
 
-                ...documento.data(),
+                ...doc.data(),
 
                 _firestoreId:
-                    documento.id
+                    doc.id
 
             });
 
         });
-
-
-        /*
-         * Guarda os IDs existentes.
-         */
-
-        idsConhecidos[nomeColecao] =
-            new Set(
-                dados.map(function (item) {
-
-                    return String(
-                        item._firestoreId
-                    );
-
-                })
-            );
 
 
         return dados;
@@ -376,47 +311,41 @@
 
 
     /* =========================================================
-       CARREGAR DADOS DO FIREBASE
-       ========================================================= */
+       CARREGAR FIREBASE PARA LOCALSTORAGE
+    ========================================================= */
 
-    async function carregarDadosDaNuvem() {
+    async function hidratarSistema(db) {
 
-        const originalSet =
+        const originalSetItem =
             Storage.prototype.setItem;
 
 
-        /*
-         * -----------------------------------------------------
-         * COLEÇÕES
-         * -----------------------------------------------------
-         */
-
         for (
-            const nomeColecao of COLLECTIONS
+            const nome
+            of COLLECTIONS
         ) {
 
             try {
 
                 const dados =
                     await carregarColecao(
-                        nomeColecao
+                        db,
+                        nome
                     );
 
 
                 /*
-                 * Se houver dados no Firebase,
-                 * eles passam a ser a fonte atual.
+                 * Só substitui o localStorage
+                 * quando existem dados na nuvem.
                  */
 
-                if (
-                    dados.length > 0
-                ) {
+                if (dados.length > 0) {
 
-                    originalSet.call(
+                    originalSetItem.call(
 
                         localStorage,
 
-                        nomeColecao,
+                        nome,
 
                         JSON.stringify(
                             dados
@@ -432,169 +361,11 @@
 
                 console.error(
 
-                    "Erro ao carregar " +
-                    nomeColecao +
-                    " do Firebase:",
+                    "Firebase: erro ao carregar " +
+                    nome,
 
                     erro
 
-                );
-
-                if (
-                    !idsConhecidos[nomeColecao]
-                ) {
-
-                    idsConhecidos[nomeColecao] =
-                        new Set();
-
-                }
-
-            }
-
-        }
-
-
-        /*
-         * -----------------------------------------------------
-         * OBJETOS GLOBAIS
-         * -----------------------------------------------------
-         */
-
-        for (
-            const nome of GLOBAL_OBJECTS
-        ) {
-
-            try {
-
-                const snapshot =
-                    await firebaseDB
-                        .collection(nome)
-                        .get();
-
-
-                const documento =
-                    snapshot.docs.find(
-                        function (doc) {
-
-                            return (
-                                doc.id === "_global"
-                            );
-
-                        }
-                    );
-
-
-                if (
-                    documento
-                ) {
-
-                    const dados =
-                        documento.data();
-
-
-                    if (
-                        dados.value !== undefined
-                    ) {
-
-                        originalSet.call(
-
-                            localStorage,
-
-                            nome,
-
-                            JSON.stringify(
-                                dados.value
-                            )
-
-                        );
-
-                    }
-
-                }
-
-            }
-
-            catch (erro) {
-
-                console.error(
-                    "Erro ao carregar " +
-                    nome +
-                    ":",
-                    erro
-                );
-
-            }
-
-        }
-
-
-        /*
-         * -----------------------------------------------------
-         * CONFIGURAÇÕES
-         * -----------------------------------------------------
-         */
-
-        for (
-            const nome of SETTINGS
-        ) {
-
-            try {
-
-                const snapshot =
-                    await firebaseDB
-                        .collection("_config")
-                        .get();
-
-
-                const documento =
-                    snapshot.docs.find(
-                        function (doc) {
-
-                            return (
-                                doc.id === nome
-                            );
-
-                        }
-                    );
-
-
-                if (
-                    documento
-                ) {
-
-                    const dados =
-                        documento.data();
-
-
-                    if (
-                        dados.value !== undefined
-                    ) {
-
-                        originalSet.call(
-
-                            localStorage,
-
-                            nome,
-
-                            String(
-                                dados.value
-                            )
-
-                        );
-
-                    }
-
-                }
-
-            }
-
-            catch (erro) {
-
-                console.error(
-                    "Erro ao carregar configuração " +
-                    nome +
-                    ":",
-                    erro
                 );
 
             }
@@ -605,93 +376,85 @@
 
 
     /* =========================================================
-       SINCRONIZAR COLEÇÃO
-       ========================================================= */
+       SALVAR COLEÇÃO
+       
+       ESTA É A FUNÇÃO USADA PELO
+       cadastro_aluno(3).html
+    ========================================================= */
 
-    async function sincronizarColecao(
-        nomeColecao,
+    async function salvarColecao(
+        nome,
         valor
     ) {
 
-        /*
-         * Evita duas sincronizações simultâneas.
-         */
+        if (!firebasePronto) {
 
-        if (
-            sincronizando[nomeColecao]
-        ) {
-
-            return;
+            throw new Error(
+                "Firebase ainda não está pronto."
+            );
 
         }
 
 
-        sincronizando[nomeColecao] =
-            true;
+        if (!COLLECTIONS.includes(nome)) {
+
+            throw new Error(
+                "Coleção não permitida: " +
+                nome
+            );
+
+        }
+
+
+        let dados;
 
 
         try {
 
-            let dados;
+            dados =
+                typeof valor === "string"
+                    ? JSON.parse(valor)
+                    : valor;
+
+        }
+
+        catch (erro) {
+
+            throw new Error(
+                "Dados inválidos para salvar no Firebase."
+            );
+
+        }
 
 
-            try {
+        if (!Array.isArray(dados)) {
 
-                dados =
-                    JSON.parse(valor);
+            throw new Error(
+                "Os dados precisam ser uma lista."
+            );
 
-            }
-
-            catch (erro) {
-
-                console.error(
-                    "JSON inválido:",
-                    nomeColecao,
-                    erro
-                );
-
-                return;
-
-            }
+        }
 
 
-            if (
-                !Array.isArray(dados)
-            ) {
-
-                console.warn(
-                    nomeColecao +
-                    " não é uma lista."
-                );
-
-                return;
-
-            }
+        const db =
+            window.CEEJAFirebase.db;
 
 
-            /*
-             * IDs que estavam no Firebase
-             * antes da alteração.
-             */
+        /*
+         * Impede gravações simultâneas
+         */
 
-            const idsAntes =
-                idsConhecidos[nomeColecao] ||
-                new Set();
+        if (sincronizando[nome]) {
 
+            return true;
 
-            /*
-             * IDs que existem agora.
-             */
-
-            const idsAgora =
-                new Set();
+        }
 
 
-            /*
-             * -------------------------------------------------
-             * PRIMEIRO: SALVAR / ATUALIZAR
-             * -------------------------------------------------
-             */
+        sincronizando[nome] = true;
+
+
+        try {
 
             for (
                 let i = 0;
@@ -709,7 +472,7 @@
                         item._firestoreId ||
 
                         gerarId(
-                            nomeColecao,
+                            nome,
                             item,
                             i
                         )
@@ -717,15 +480,12 @@
                     );
 
 
-                idsAgora.add(id);
-
-
                 const dadosLimpos =
                     limparDados(item);
 
 
-                await firebaseDB
-                    .collection(nomeColecao)
+                await db
+                    .collection(nome)
                     .doc(id)
                     .set(
                         dadosLimpos,
@@ -736,7 +496,8 @@
 
 
                 /*
-                 * Guarda o ID no cadastro local.
+                 * Guarda o ID
+                 * do documento.
                  */
 
                 item._firestoreId =
@@ -746,78 +507,12 @@
 
 
             /*
-             * -------------------------------------------------
-             * SEGUNDO: EXCLUIR
-             * -------------------------------------------------
-             *
-             * Se existia antes, mas não existe agora,
-             * foi excluído pelo usuário.
+             * Atualiza o localStorage
              */
 
-            for (
-                const id of idsAntes
-            ) {
+            localStorage.setItem(
 
-                if (
-                    !idsAgora.has(id)
-                ) {
-
-                    try {
-
-                        await firebaseDB
-                            .collection(
-                                nomeColecao
-                            )
-                            .doc(id)
-                            .delete();
-
-
-                        console.log(
-                            "Firebase: documento excluído:",
-                            nomeColecao,
-                            id
-                        );
-
-                    }
-
-                    catch (erroExcluir) {
-
-                        console.error(
-                            "Erro ao excluir documento:",
-                            nomeColecao,
-                            id,
-                            erroExcluir
-                        );
-
-                    }
-
-                }
-
-            }
-
-
-            /*
-             * Atualiza os IDs conhecidos.
-             */
-
-            idsConhecidos[nomeColecao] =
-                idsAgora;
-
-
-            /*
-             * Atualiza o localStorage com os
-             * IDs do Firebase.
-             */
-
-            const originalSet =
-                Storage.prototype.setItem;
-
-
-            originalSet.call(
-
-                localStorage,
-
-                nomeColecao,
+                nome,
 
                 JSON.stringify(
                     dados
@@ -828,41 +523,48 @@
 
             console.log(
                 "Firebase: " +
-                nomeColecao +
-                " sincronizado."
+                nome +
+                " salvo com sucesso."
             );
+
+
+            return true;
 
         }
 
         catch (erro) {
 
             console.error(
-
-                "Firebase: erro ao sincronizar " +
-                nomeColecao,
-
+                "Firebase: erro ao salvar " +
+                nome,
                 erro
-
             );
 
 
             if (
-                nomeColecao ===
+                nome ===
                 "cadastroAlunos"
             ) {
 
-                console.error(
-                    "Não foi possível salvar cadastroAlunos no Firebase.",
-                    erro.message || erro
-                );
+                window.__erroFirebaseCadastro =
+
+                    erro &&
+                    erro.message
+
+                        ? erro.message
+
+                        : String(erro);
 
             }
+
+
+            throw erro;
 
         }
 
         finally {
 
-            sincronizando[nomeColecao] =
+            sincronizando[nome] =
                 false;
 
         }
@@ -871,111 +573,8 @@
 
 
     /* =========================================================
-       SINCRONIZAR OBJETO GLOBAL
-       ========================================================= */
-
-    async function sincronizarGlobal(
-        nome,
-        valor
-    ) {
-
-        try {
-
-            let dados;
-
-
-            try {
-
-                dados =
-                    JSON.parse(valor);
-
-            }
-
-            catch (erro) {
-
-                dados =
-                    valor;
-
-            }
-
-
-            await firebaseDB
-                .collection(nome)
-                .doc("_global")
-                .set(
-
-                    {
-                        value: dados
-                    },
-
-                    {
-                        merge: true
-                    }
-
-                );
-
-        }
-
-        catch (erro) {
-
-            console.error(
-                "Erro ao salvar " +
-                nome +
-                ":",
-                erro
-            );
-
-        }
-
-    }
-
-
-    /* =========================================================
-       SINCRONIZAR CONFIGURAÇÃO
-       ========================================================= */
-
-    async function sincronizarConfiguracao(
-        nome,
-        valor
-    ) {
-
-        try {
-
-            await firebaseDB
-                .collection("_config")
-                .doc(nome)
-                .set(
-
-                    {
-                        value:
-                            String(valor)
-                    },
-
-                    {
-                        merge: true
-                    }
-
-                );
-
-        }
-
-        catch (erro) {
-
-            console.error(
-                "Erro ao salvar configuração " +
-                nome +
-                ":",
-                erro
-            );
-
-        }
-
-    }
-
-
-    /* =========================================================
-       INTERCEPTAR localStorage
-       ========================================================= */
+       SINCRONIZAR AUTOMATICAMENTE O LOCALSTORAGE
+    ========================================================= */
 
     function ativarSincronizacao() {
 
@@ -991,7 +590,6 @@
 
                 /*
                  * Primeiro salva normalmente
-                 * no navegador.
                  */
 
                 originalSetItem.call(
@@ -1006,11 +604,12 @@
 
 
                 /*
-                 * Só trabalhamos com localStorage.
+                 * Só trabalha com localStorage
                  */
 
                 if (
-                    this !== localStorage
+                    this !==
+                    localStorage
                 ) {
 
                     return;
@@ -1019,7 +618,8 @@
 
 
                 /*
-                 * Coleções.
+                 * Se for uma coleção,
+                 * envia para o Firebase.
                  */
 
                 if (
@@ -1028,59 +628,18 @@
                     )
                 ) {
 
-                    sincronizarColecao(
-
+                    salvarColecao(
                         chave,
-
                         valor
-
-                    );
-
-                    return;
-
-                }
-
-
-                /*
-                 * Objetos globais.
-                 */
-
-                if (
-                    GLOBAL_OBJECTS.includes(
-                        chave
                     )
-                ) {
+                    .catch(function (erro) {
 
-                    sincronizarGlobal(
+                        console.error(
+                            "Erro na sincronização:",
+                            erro
+                        );
 
-                        chave,
-
-                        valor
-
-                    );
-
-                    return;
-
-                }
-
-
-                /*
-                 * Configurações.
-                 */
-
-                if (
-                    SETTINGS.includes(
-                        chave
-                    )
-                ) {
-
-                    sincronizarConfiguracao(
-
-                        chave,
-
-                        valor
-
-                    );
+                    });
 
                 }
 
@@ -1090,127 +649,256 @@
 
 
     /* =========================================================
-       EXECUTAR CÓDIGO DA PÁGINA
-       ========================================================= */
-
-    function executarPagina() {
-
-        const holder =
-            document.getElementById(
-                "ceeja-app-script"
-            );
-
-
-        if (
-            !holder
-        ) {
-
-            console.warn(
-                "CEEJA: não foi encontrado o elemento ceeja-app-script."
-            );
-
-            return;
-
-        }
-
-
-        const script =
-            document.createElement(
-                "script"
-            );
-
-
-        script.textContent =
-            holder.textContent;
-
-
-        holder.replaceWith(
-            script
-        );
-
-    }
-
-
-    /* =========================================================
-       INICIALIZAÇÃO
-       ========================================================= */
+       INICIAR
+    ========================================================= */
 
     async function iniciar() {
 
+        /*
+         * Cria o objeto global imediatamente.
+         */
+
+        window.CEEJAFirebase = {
+
+            pronto: false,
+
+            erro: null,
+
+            db: null,
+
+            app: null,
+
+            firebaseConfig:
+                firebaseConfig,
+
+            salvarColecao:
+                salvarColecao
+
+        };
+
+
         try {
 
-            console.log(
-                "CEEJA: iniciando Firebase..."
-            );
-
-
             /*
-             * Carrega Firebase.
+             * Carregar Firebase
              */
 
-            await inicializarFirebase();
+            await carregarFirebase();
 
 
             /*
-             * Carrega primeiro os dados
-             * que estão na nuvem.
+             * Inicializar aplicativo
              */
 
-            await carregarDadosDaNuvem();
+            let app;
+
+
+            if (
+                window.firebase.apps &&
+                window.firebase.apps.length > 0
+            ) {
+
+                app =
+                    window.firebase.app();
+
+            }
+
+            else {
+
+                app =
+                    window.firebase.initializeApp(
+                        firebaseConfig
+                    );
+
+            }
+
+
+            const db =
+                app.firestore();
 
 
             /*
-             * Firebase pronto.
+             * Autenticação anônima
+             */
+
+            try {
+
+                if (
+                    !window.firebase
+                        .auth()
+                        .currentUser
+                ) {
+
+                    await window.firebase
+                        .auth()
+                        .signInAnonymously();
+
+                }
+
+            }
+
+            catch (erroAuth) {
+
+                console.warn(
+                    "Firebase Authentication:",
+                    erroAuth
+                );
+
+            }
+
+
+            /*
+             * Disponibiliza o Firebase
+             */
+
+            window.CEEJAFirebase.app =
+                app;
+
+            window.CEEJAFirebase.db =
+                db;
+
+
+            /*
+             * Carregar dados existentes
+             */
+
+            await hidratarSistema(db);
+
+
+            /*
+             * Firebase pronto
              */
 
             firebasePronto =
                 true;
 
 
+            window.CEEJAFirebase.pronto =
+                true;
+
+            window.CEEJAFirebase.erro =
+                null;
+
+
             /*
-             * Ativa sincronização.
+             * Ativar sincronização
              */
 
             ativarSincronizacao();
-
-
-            /*
-             * Executa a página depois
-             * que o Firebase terminou.
-             */
-
-            executarPagina();
 
 
             console.log(
                 "CEEJA: Firebase conectado."
             );
 
+
+            /*
+             * =================================================
+             * EXECUTAR CÓDIGO DA PÁGINA
+             * =================================================
+             *
+             * Algumas páginas usam:
+             *
+             * <script
+             * id="ceeja-app-script"
+             * type="text/plain">
+             *
+             * </script>
+             */
+
+            const holder =
+                document.getElementById(
+                    "ceeja-app-script"
+                );
+
+
+            if (holder) {
+
+                const script =
+                    document.createElement(
+                        "script"
+                    );
+
+
+                script.textContent =
+                    holder.textContent;
+
+
+                holder.replaceWith(
+                    script
+                );
+
+            }
+
         }
 
         catch (erro) {
 
             console.error(
-                "CEEJA: erro ao iniciar Firebase:",
+                "CEEJA: erro ao inicializar Firebase:",
                 erro
             );
 
 
+            firebasePronto =
+                false;
+
+
+            firebaseErro =
+                erro;
+
+
+            window.CEEJAFirebase.pronto =
+                false;
+
+
+            window.CEEJAFirebase.erro =
+
+                erro &&
+                erro.message
+
+                    ? erro.message
+
+                    : String(erro);
+
+
             /*
-             * Mesmo se o Firebase falhar,
-             * não deixa a página travada.
+             * Mesmo com erro,
+             * executa a página normalmente.
              */
 
-            executarPagina();
+            const holder =
+                document.getElementById(
+                    "ceeja-app-script"
+                );
+
+
+            if (holder) {
+
+                const script =
+                    document.createElement(
+                        "script"
+                    );
+
+
+                script.textContent =
+                    holder.textContent;
+
+
+                holder.replaceWith(
+                    script
+                );
+
+            }
 
         }
 
     }
 
 
-    /*
-     * Inicia tudo.
-     */
+    /* =========================================================
+       INICIAR SISTEMA
+    ========================================================= */
 
     iniciar();
 
