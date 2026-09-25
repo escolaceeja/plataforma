@@ -1,17 +1,10 @@
 /*
  * ============================================================
- * CEEJA LINHARES - FIREBASE CLOUD
- * Integração entre localStorage e Firebase Firestore
+ * CEEJA LINHARES
+ * Integração localStorage + Firebase Firestore
  * ============================================================
  *
- * Este arquivo:
- *
- * 1. Conecta ao Firebase.
- * 2. Faz autenticação anônima.
- * 3. Carrega os dados existentes do Firestore.
- * 4. Mantém o sistema atual funcionando com localStorage.
- * 5. Sincroniza alterações com o Firestore.
- * 6. Mostra o erro real do Firebase quando houver falha.
+ * Versão compatível com Firebase Compat SDK
  *
  * ============================================================
  */
@@ -103,29 +96,21 @@
 
     /*
      * =========================================================
-     * CONTROLE DAS FILAS
+     * CONTROLE
      * =========================================================
      */
 
     const filas = new Map();
 
-
-    /*
-     * Método ORIGINAL do localStorage.
-     *
-     * Isso é importante para evitar loop de sincronização.
-     */
-
     const nativeSetItem =
         Storage.prototype.setItem;
-
 
     let firebasePronto = false;
 
 
     /*
      * =========================================================
-     * CARREGAR SCRIPT DO FIREBASE
+     * CARREGAR SCRIPT
      * =========================================================
      */
 
@@ -138,15 +123,23 @@
 
             script.src = src;
 
-            script.onload = resolve;
+            script.onload = function () {
+
+                resolve();
+
+            };
 
             script.onerror = function () {
 
                 reject(
+
                     new Error(
+
                         "Não foi possível carregar o Firebase: " +
                         src
+
                     )
+
                 );
 
             };
@@ -160,7 +153,7 @@
 
     /*
      * =========================================================
-     * EXECUTAR O CÓDIGO ORIGINAL DA PÁGINA
+     * EXECUTAR CÓDIGO DA PÁGINA
      * =========================================================
      */
 
@@ -171,17 +164,27 @@
                 "ceeja-app-script"
             );
 
+
         if (!holder) {
+
             return;
+
         }
 
+
         const script =
-            document.createElement("script");
+            document.createElement(
+                "script"
+            );
+
 
         script.textContent =
             holder.textContent;
 
-        holder.replaceWith(script);
+
+        holder.replaceWith(
+            script
+        );
 
     }
 
@@ -199,13 +202,16 @@
             mensagem
         );
 
+
         window.__erroFirebaseCadastro =
             mensagem;
 
 
         if (
+
             typeof window.mostrarErroFirebase ===
             "function"
+
         ) {
 
             window.mostrarErroFirebase(
@@ -219,7 +225,7 @@
 
     /*
      * =========================================================
-     * GERAR ID DOS DOCUMENTOS
+     * GERAR ID DO DOCUMENTO
      * =========================================================
      */
 
@@ -232,48 +238,82 @@
         let raw;
 
 
+        /*
+         * CADASTRO DE ALUNOS
+         *
+         * O CPF será o ID do documento.
+         */
+
         if (
+
             collectionName ===
             "cadastroAlunos"
+
         ) {
 
             raw =
+
                 item.cpf ||
+
                 item.matricula ||
+
                 String(index);
 
         }
 
 
+        /*
+         * FUNCIONÁRIOS
+         */
+
         else if (
+
             collectionName ===
             "funcionariosCadastrados"
+
         ) {
 
             raw =
+
                 item.cpf ||
+
                 item.usuario ||
+
                 String(index);
 
         }
 
 
+        /*
+         * PRESENÇA
+         */
+
         else if (
+
             collectionName ===
             "registrosPresenca"
+
         ) {
 
             raw =
+
                 item.id ||
+
                 `${item.cpfAluno || "aluno"}_${item.data || ""}_${item.hora || item.horario || ""}_${index}`;
 
         }
 
 
+        /*
+         * OUTROS REGISTROS
+         */
+
         else {
 
             raw =
+
                 item.id ||
+
                 `${item.cpfAluno || item.cpf || "registro"}_${item.timestamp || Date.now()}_${index}`;
 
         }
@@ -308,7 +348,14 @@
             ...item
         };
 
+
+        /*
+         * Este campo é usado somente
+         * internamente pelo sistema.
+         */
+
         delete copia._firestoreId;
+
 
         return copia;
 
@@ -317,8 +364,21 @@
 
     /*
      * =========================================================
-     * CARREGAR UMA COLEÇÃO DO FIRESTORE
+     * CARREGAR COLEÇÃO
      * =========================================================
+     *
+     * IMPORTANTE:
+     *
+     * Estamos usando Firebase COMPAT.
+     *
+     * Portanto usamos:
+     *
+     * db.collection(nome).get()
+     *
+     * e NÃO:
+     *
+     * getDocs(collection(...))
+     *
      */
 
     async function carregarColecao(
@@ -326,26 +386,20 @@
         nome
     ) {
 
-        const {
-            collection,
-            getDocs
-        } =
-            window.firebase.firestore;
-
-
         const snapshot =
-            await getDocs(
-                collection(
-                    db,
-                    nome
-                )
-            );
+
+            await db
+
+                .collection(nome)
+
+                .get();
 
 
         const dados = [];
 
 
         snapshot.forEach(
+
             function (docSnap) {
 
                 dados.push({
@@ -358,6 +412,7 @@
                 });
 
             }
+
         );
 
 
@@ -382,16 +437,22 @@
          */
 
         for (
+
             const nome
             of COLLECTIONS
+
         ) {
 
             try {
 
                 const dados =
+
                     await carregarColecao(
+
                         db,
+
                         nome
+
                     );
 
 
@@ -401,7 +462,9 @@
                  */
 
                 if (
+
                     dados.length > 0
+
                 ) {
 
                     nativeSetItem.call(
@@ -442,40 +505,38 @@
          */
 
         for (
+
             const nome
             of GLOBAL_OBJECTS
+
         ) {
 
             try {
 
-                const {
-                    collection,
-                    getDocs
-                } =
-                    window.firebase.firestore;
-
-
                 const snapshot =
-                    await getDocs(
 
-                        collection(
-                            db,
-                            nome
-                        )
+                    await db
 
-                    );
+                        .collection(nome)
+
+                        .get();
 
 
                 const documento =
+
                     snapshot.docs.find(
+
                         function (d) {
 
                             return (
+
                                 d.id ===
                                 "_global"
+
                             );
 
                         }
+
                     );
 
 
@@ -528,40 +589,38 @@
          */
 
         for (
+
             const nome
             of SETTINGS
+
         ) {
 
             try {
 
-                const {
-                    collection,
-                    getDocs
-                } =
-                    window.firebase.firestore;
-
-
                 const snapshot =
-                    await getDocs(
 
-                        collection(
-                            db,
-                            "_config"
-                        )
+                    await db
 
-                    );
+                        .collection("_config")
+
+                        .get();
 
 
                 const documento =
+
                     snapshot.docs.find(
+
                         function (d) {
 
                             return (
+
                                 d.id ===
                                 nome
+
                             );
 
                         }
+
                     );
 
 
@@ -630,7 +689,7 @@
 
         /*
          * -----------------------------------------------------
-         * TRANSFORMAR JSON
+         * CONVERTER JSON
          * -----------------------------------------------------
          */
 
@@ -646,7 +705,9 @@
         catch (erro) {
 
             throw new Error(
+
                 `JSON inválido em ${nome}.`
+
             );
 
         }
@@ -654,12 +715,14 @@
 
         /*
          * -----------------------------------------------------
-         * VERIFICAR LISTA
+         * VERIFICAR ARRAY
          * -----------------------------------------------------
          */
 
         if (
+
             !Array.isArray(dados)
+
         ) {
 
             throw new Error(
@@ -671,16 +734,9 @@
         }
 
 
-        const {
-            doc,
-            setDoc
-        } =
-            window.firebase.firestore;
-
-
         /*
          * -----------------------------------------------------
-         * SALVAR CADA REGISTRO
+         * SALVAR OS DOCUMENTOS
          * -----------------------------------------------------
          */
 
@@ -699,7 +755,12 @@
                 dados[indice];
 
 
+            /*
+             * ID do documento
+             */
+
             const id =
+
                 String(
 
                     item._firestoreId ||
@@ -717,37 +778,56 @@
                 );
 
 
+            /*
+             * Remover campos internos
+             */
+
             const dadosLimpos =
+
                 limparDados(
                     item
                 );
 
 
-            await setDoc(
+            /*
+             * =================================================
+             * FIRESTORE COMPAT
+             * =================================================
+             *
+             * AQUI ESTÁ A CORREÇÃO PRINCIPAL.
+             *
+             * Não usamos:
+             *
+             * doc()
+             * setDoc()
+             *
+             * Usamos:
+             *
+             * db.collection().doc().set()
+             */
 
-                doc(
+            await db
 
-                    db,
+                .collection(nome)
 
-                    nome,
+                .doc(id)
 
-                    id
+                .set(
 
-                ),
+                    dadosLimpos,
 
-                dadosLimpos,
+                    {
 
-                {
+                        merge:
+                            true
 
-                    merge: true
+                    }
 
-                }
-
-            );
+                );
 
 
             /*
-             * Guardar ID do Firestore
+             * Guardar ID localmente
              */
 
             item._firestoreId =
@@ -757,8 +837,12 @@
 
 
         /*
-         * Atualizar localStorage
-         * usando o método ORIGINAL.
+         * -----------------------------------------------------
+         * ATUALIZAR LOCALSTORAGE
+         * -----------------------------------------------------
+         *
+         * Usa o método ORIGINAL para não gerar
+         * uma nova sincronização.
          */
 
         nativeSetItem.call(
@@ -800,12 +884,16 @@
     ) {
 
         const anterior =
+
             filas.get(nome) ||
+
             Promise.resolve();
 
 
         const atual =
+
             anterior.then(
+
                 function () {
 
                     return sincronizarColecao(
@@ -819,19 +907,25 @@
                     );
 
                 }
+
             );
 
 
         filas.set(
+
             nome,
+
             atual
+
         );
 
 
         atual.catch(
+
             function (erro) {
 
                 const codigo =
+
                     erro &&
                     erro.code
 
@@ -841,6 +935,7 @@
 
 
                 const detalhe =
+
                     erro &&
                     erro.message
 
@@ -858,15 +953,19 @@
                 );
 
             }
+
         );
 
 
         atual.finally(
+
             function () {
 
                 if (
+
                     filas.get(nome)
                     === atual
+
                 ) {
 
                     filas.delete(
@@ -876,6 +975,7 @@
                 }
 
             }
+
         );
 
 
@@ -941,40 +1041,29 @@
         }
 
 
-        const {
-            doc,
-            setDoc
-        } =
-            window.firebase.firestore;
+        await db
 
+            .collection(nome)
 
-        await setDoc(
+            .doc("_global")
 
-            doc(
+            .set(
 
-                db,
+                {
 
-                nome,
+                    value:
+                        dados
 
-                "_global"
+                },
 
-            ),
+                {
 
-            {
+                    merge:
+                        true
 
-                value:
-                    dados
+                }
 
-            },
-
-            {
-
-                merge:
-                    true
-
-            }
-
-        );
+            );
 
 
         console.log(
@@ -1002,40 +1091,29 @@
 
     ) {
 
-        const {
-            doc,
-            setDoc
-        } =
-            window.firebase.firestore;
+        await db
 
+            .collection("_config")
 
-        await setDoc(
+            .doc(nome)
 
-            doc(
+            .set(
 
-                db,
+                {
 
-                "_config",
+                    value:
+                        String(valor)
 
-                nome
+                },
 
-            ),
+                {
 
-            {
+                    merge:
+                        true
 
-                value:
-                    String(valor)
+                }
 
-            },
-
-            {
-
-                merge:
-                    true
-
-            }
-
-        );
+            );
 
 
         console.log(
@@ -1049,7 +1127,7 @@
 
     /*
      * =========================================================
-     * INICIALIZAÇÃO
+     * INICIALIZAR FIREBASE
      * =========================================================
      */
 
@@ -1079,7 +1157,7 @@
 
             /*
              * -------------------------------------------------
-             * FIREBASE AUTHENTICATION
+             * FIREBASE AUTH
              * -------------------------------------------------
              */
 
@@ -1134,6 +1212,10 @@
                     );
 
 
+            /*
+             * Criar conexão com Firestore
+             */
+
             const db =
                 app.firestore();
 
@@ -1145,7 +1227,11 @@
              */
 
             if (
-                !window.firebase.auth().currentUser
+
+                !window.firebase
+                    .auth()
+                    .currentUser
+
             ) {
 
                 await window.firebase
@@ -1163,9 +1249,16 @@
              * -------------------------------------------------
              */
 
-            if (
-                !window.firebase.auth().currentUser
-            ) {
+            const usuarioFirebase =
+
+                window.firebase
+
+                    .auth()
+
+                    .currentUser;
+
+
+            if (!usuarioFirebase) {
 
                 throw new Error(
 
@@ -1178,15 +1271,16 @@
 
             console.log(
 
-                "CEEJA: autenticação Firebase concluída. UID:",
+                "CEEJA: autenticação Firebase concluída."
 
-                window.firebase
+            );
 
-                    .auth()
 
-                    .currentUser
+            console.log(
 
-                    .uid
+                "CEEJA: UID Firebase:",
+
+                usuarioFirebase.uid
 
             );
 
@@ -1211,13 +1305,23 @@
                 pronto:
                     true,
 
+
                 aguardarSincronizacao:
                     aguardarSincronizacao,
 
+
+                /*
+                 * Função usada diretamente pelo cadastro
+                 */
+
                 salvarColecao:
+
                     function (
+
                         nome,
+
                         valor
+
                     ) {
 
                         return agendarColecao(
@@ -1237,7 +1341,7 @@
 
             /*
              * -------------------------------------------------
-             * CARREGAR DADOS DA NUVEM
+             * CARREGAR DADOS EXISTENTES
              * -------------------------------------------------
              */
 
@@ -1245,6 +1349,10 @@
                 db
             );
 
+
+            /*
+             * Firebase está pronto.
+             */
 
             firebasePronto =
                 true;
@@ -1268,7 +1376,9 @@
 
 
                     /*
-                     * Salvar normalmente no navegador
+                     * --------------------------------------------
+                     * SALVAR NO NAVEGADOR
+                     * --------------------------------------------
                      */
 
                     nativeSetItem.call(
@@ -1283,20 +1393,14 @@
 
 
                     /*
-                     * Só sincronizar localStorage
+                     * Só interessa localStorage
                      */
 
                     if (
-                        this !== localStorage
-                    ) {
 
-                        return;
+                        this !==
+                        localStorage
 
-                    }
-
-
-                    if (
-                        !firebasePronto
                     ) {
 
                         return;
@@ -1305,15 +1409,32 @@
 
 
                     /*
-                     * ------------------------------------------------
-                     * COLEÇÕES
-                     * ------------------------------------------------
+                     * Firebase precisa estar pronto
                      */
 
                     if (
+
+                        !firebasePronto
+
+                    ) {
+
+                        return;
+
+                    }
+
+
+                    /*
+                     * --------------------------------------------
+                     * COLEÇÕES
+                     * --------------------------------------------
+                     */
+
+                    if (
+
                         COLLECTIONS.has(
                             chave
                         )
+
                     ) {
 
                         agendarColecao(
@@ -1333,54 +1454,67 @@
 
 
                     /*
-                     * ------------------------------------------------
+                     * --------------------------------------------
                      * OBJETOS GLOBAIS
-                     * ------------------------------------------------
+                     * --------------------------------------------
                      */
 
                     if (
+
                         GLOBAL_OBJECTS.has(
                             chave
                         )
+
                     ) {
 
                         const filaId =
+
                             "__global__" +
                             chave;
 
 
                         const anterior =
+
                             filas.get(
                                 filaId
                             ) ||
+
                             Promise.resolve();
 
 
                         const atual =
+
                             anterior.then(
+
                                 function () {
 
-                                    return sincronizarGlobal(
+                                    return
+                                        sincronizarGlobal(
 
-                                        db,
+                                            db,
 
-                                        chave,
+                                            chave,
 
-                                        valor
+                                            valor
 
-                                    );
+                                        );
 
                                 }
+
                             );
 
 
                         filas.set(
+
                             filaId,
+
                             atual
+
                         );
 
 
                         atual.catch(
+
                             function (erro) {
 
                                 console.error(
@@ -1392,6 +1526,7 @@
                                 );
 
                             }
+
                         );
 
 
@@ -1401,54 +1536,67 @@
 
 
                     /*
-                     * ------------------------------------------------
+                     * --------------------------------------------
                      * CONFIGURAÇÕES
-                     * ------------------------------------------------
+                     * --------------------------------------------
                      */
 
                     if (
+
                         SETTINGS.has(
                             chave
                         )
+
                     ) {
 
                         const filaId =
+
                             "__config__" +
                             chave;
 
 
                         const anterior =
+
                             filas.get(
                                 filaId
                             ) ||
+
                             Promise.resolve();
 
 
                         const atual =
+
                             anterior.then(
+
                                 function () {
 
-                                    return sincronizarConfiguracao(
+                                    return
+                                        sincronizarConfiguracao(
 
-                                        db,
+                                            db,
 
-                                        chave,
+                                            chave,
 
-                                        valor
+                                            valor
 
-                                    );
+                                        );
 
                                 }
+
                             );
 
 
                         filas.set(
+
                             filaId,
+
                             atual
+
                         );
 
 
                         atual.catch(
+
                             function (erro) {
 
                                 console.error(
@@ -1460,6 +1608,7 @@
                                 );
 
                             }
+
                         );
 
                     }
@@ -1469,19 +1618,33 @@
 
             /*
              * =================================================
-             * FIREBASE CONECTADO
+             * FIREBASE PRONTO
              * =================================================
              */
 
             console.log(
 
-                "CEEJA: Firebase conectado e sincronização ativada."
+                "CEEJA: Firebase conectado."
+
+            );
+
+
+            console.log(
+
+                "CEEJA: Firestore conectado."
+
+            );
+
+
+            console.log(
+
+                "CEEJA: sincronização ativada."
 
             );
 
 
             /*
-             * Executar código original da página
+             * Executar o código original da página.
              */
 
             executarPaginaOriginal();
@@ -1491,11 +1654,13 @@
 
         catch (erro) {
 
+
             firebasePronto =
                 false;
 
 
             const codigo =
+
                 erro &&
                 erro.code
 
@@ -1505,6 +1670,7 @@
 
 
             const detalhe =
+
                 erro &&
                 erro.message
 
@@ -1524,6 +1690,10 @@
             );
 
 
+            /*
+             * Informar o estado para as páginas
+             */
+
             window.CEEJAFirebase = {
 
                 pronto:
@@ -1532,7 +1702,20 @@
                 erro:
                     detalhe,
 
+
                 aguardarSincronizacao:
+
+                    function () {
+
+                        return Promise.reject(
+                            erro
+                        );
+
+                    },
+
+
+                salvarColecao:
+
                     function () {
 
                         return Promise.reject(
@@ -1545,19 +1728,19 @@
 
 
             /*
-             * Mostrar o erro verdadeiro
+             * Mostrar erro na página
              */
 
             mostrarErro(
 
-                `Firebase não foi conectado${codigo}. ${detalhe}`
+                `Firebase não foi conectado${codigo}. Firebase: Error (${codigo || "erro"}). ${detalhe}`
 
             );
 
 
             /*
-             * Mesmo sem Firebase,
-             * permite o sistema funcionar localmente.
+             * Mesmo com Firebase indisponível,
+             * executamos a página localmente.
              */
 
             executarPaginaOriginal();
