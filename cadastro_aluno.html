@@ -1,271 +1,1555 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Novo Cadastro - CEEJA Linhares</title>
-    <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
-        body { background-color: #f4f6f9; padding: 20px; color: #333; }
-        .container { max-width: 850px; margin: 20px auto; }
-        .card { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); margin-bottom: 20px; }
-        h2 { color: #1a73e8; margin-bottom: 20px; font-size: 22px; text-align: center; border-bottom: 2px solid #f0f2f5; padding-bottom: 10px; }
-        
-        .form-row { display: flex; gap: 15px; }
-        .form-row .input-group { flex: 1; }
-        
-        .input-group { margin-bottom: 15px; }
-        label { display: block; font-weight: 600; margin-bottom: 5px; font-size: 14px; }
-        input, select { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 6px; font-size: 15px; background: white; }
-        #nome { text-transform: uppercase; }
-        
-        .secao-etapas { background: #f8f9fa; border: 1px solid #e0e0e0; border-radius: 8px; padding: 15px; margin-bottom: 15px; display: none; }
-        .secao-etapas h3 { font-size: 15px; color: #003366; margin-bottom: 5px; }
-        .secao-etapas p { font-size: 12px; color: #666; margin-bottom: 15px; }
-        .grid-disciplinas { display: flex; flex-direction: column; gap: 8px; }
-        
-        .linha-disciplina, .linha-cabecalho { display: flex; justify-content: space-between; align-items: center; background: white; padding: 8px 12px; border-radius: 6px; border: 1px solid #ddd; }
-        .linha-cabecalho { background: #e9ecef; border-color: #ced4da; font-weight: bold; }
-        
-        .nome-disciplina { font-weight: 600; font-size: 13px; min-width: 150px; }
-        .opcoes-etapas { display: flex; gap: 10px; flex: 1; justify-content: space-around; }
-        .opcoes-etapas label { font-size: 11px; font-weight: normal; cursor: pointer; display: flex; align-items: center; gap: 4px; text-align: center; }
 
-        .btn-salvar { background: #34a853; color: white; border: none; padding: 12px; border-radius: 6px; font-weight: bold; cursor: pointer; width: 100%; font-size: 16px; margin-top: 10px; }
-        .btn-salvar:hover { background: #2c8c46; }
-        .btn-voltar { display: inline-block; background: #6c757d; color: white; padding: 10px 18px; border-radius: 6px; font-weight: bold; text-decoration: none; margin-bottom: 15px; font-size: 14px; }
-        .btn-voltar:hover { background: #5a6268; }
-        .alerta-sucesso { background: #d4edda; color: #155724; padding: 12px; border-radius: 6px; margin-bottom: 15px; display: none; font-size: 14px; text-align: center; border: 1px solid #c3e6cb; font-weight: bold; }
-        .alerta-erro { background: #f8d7da; color: #721c24; padding: 12px; border-radius: 6px; margin-bottom: 15px; display: none; font-size: 14px; text-align: center; border: 1px solid #f5c6cb; font-weight: bold; }
-        
-        @media (max-width: 600px) { .form-row { flex-direction: column; gap: 0; } }
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Novo Cadastro - CEEJA Linhares</title>
+
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+
+        body {
+            background-color: #f4f6f9;
+            padding: 20px;
+            color: #333;
+        }
+
+
+        .container {
+            max-width: 850px;
+            margin: 20px auto;
+        }
+
+
+        .card {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow:
+                0 4px 12px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+        }
+
+
+        h2 {
+            color: #1a73e8;
+            margin-bottom: 20px;
+            font-size: 22px;
+            text-align: center;
+            border-bottom:
+                2px solid #f0f2f5;
+            padding-bottom: 10px;
+        }
+
+
+        .form-row {
+            display: flex;
+            gap: 15px;
+        }
+
+
+        .form-row .input-group {
+            flex: 1;
+        }
+
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+
+
+        input,
+        select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 15px;
+            background: white;
+        }
+
+
+        #nome {
+            text-transform: uppercase;
+        }
+
+
+        .secao-etapas {
+            background: #f8f9fa;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            display: none;
+        }
+
+
+        .secao-etapas h3 {
+            font-size: 15px;
+            color: #003366;
+            margin-bottom: 5px;
+        }
+
+
+        .secao-etapas p {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 15px;
+        }
+
+
+        .grid-disciplinas {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+
+        .linha-disciplina,
+        .linha-cabecalho {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            border: 1px solid #ddd;
+        }
+
+
+        .linha-cabecalho {
+            background: #e9ecef;
+            border-color: #ced4da;
+            font-weight: bold;
+        }
+
+
+        .nome-disciplina {
+            font-weight: 600;
+            font-size: 13px;
+            min-width: 150px;
+        }
+
+
+        .opcoes-etapas {
+            display: flex;
+            gap: 10px;
+            flex: 1;
+            justify-content: space-around;
+        }
+
+
+        .opcoes-etapas label {
+            font-size: 11px;
+            font-weight: normal;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            text-align: center;
+        }
+
+
+        .btn-salvar {
+            background: #34a853;
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+
+
+        .btn-salvar:hover {
+            background: #2c8c46;
+        }
+
+
+        .btn-salvar:disabled {
+            background: #8bc69a;
+            cursor: wait;
+        }
+
+
+        .btn-voltar {
+            display: inline-block;
+            background: #6c757d;
+            color: white;
+            padding: 10px 18px;
+            border-radius: 6px;
+            font-weight: bold;
+            text-decoration: none;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+
+
+        .btn-voltar:hover {
+            background: #5a6268;
+        }
+
+
+        .alerta-sucesso {
+            background: #d4edda;
+            color: #155724;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            display: none;
+            font-size: 14px;
+            text-align: center;
+            border: 1px solid #c3e6cb;
+            font-weight: bold;
+        }
+
+
+        .alerta-erro {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            display: none;
+            font-size: 14px;
+            text-align: center;
+            border: 1px solid #f5c6cb;
+            font-weight: bold;
+        }
+
+
+        @media (max-width: 600px) {
+
+            .form-row {
+                flex-direction: column;
+                gap: 0;
+            }
+
+        }
+
     </style>
+
 </head>
+
+
 <body>
 
+
     <div class="container">
-        <a href="painel_secretaria.html" class="btn-voltar">← Voltar ao Painel da Secretaria</a>
+
+
+        <a
+            href="painel_secretaria.html"
+            class="btn-voltar"
+        >
+            ← Voltar ao Painel da Secretaria
+        </a>
+
 
         <div class="card">
-            <h2>Novo Cadastro de Aluno</h2>
-            
-            <div id="alertaSucesso" class="alerta-sucesso">Aluno cadastrado com sucesso!</div>
-            <div id="alertaErro" class="alerta-erro">Aviso: Este CPF já está cadastrado no sistema!</div>
-            
-            <form id="formCadastro" onsubmit="cadastrarAluno(event)">
-                <div class="input-group">
-                    <label for="nome">Nome Completo do Aluno</label>
-                    <input type="text" id="nome" placeholder="DIGITE O NOME COMPLETO" required>
-                </div>
 
-                <div class="form-row">
-                    <div class="input-group">
-                        <label for="cpf">CPF (Apenas números)</label>
-                        <input type="text" id="cpf" placeholder="000.000.000-00" maxlength="14" oninput="mascaraCPF(this)" required>
-                    </div>
 
-                    <div class="input-group">
-                        <label for="dataNascimento">Data de Nascimento</label>
-                        <input type="date" id="dataNascimento" required>
-                    </div>
-                </div>
+            <h2>
+                Novo Cadastro de Aluno
+            </h2>
 
-                <div class="form-row">
-                    <div class="input-group">
-                        <label for="telefone">Telefone de Contato</label>
-                        <input type="text" id="telefone" placeholder="Ex: (27) 99999-9999" maxlength="15" oninput="mascaraTelefone(this)" required>
-                    </div>
 
-                    <div class="input-group">
-                        <label for="email">E-mail do Aluno</label>
-                        <input type="email" id="email" placeholder="exemplo@email.com" required>
-                    </div>
-                </div>
+            <div
+                id="alertaSucesso"
+                class="alerta-sucesso"
+            >
+                Aluno cadastrado com sucesso!
+            </div>
+
+
+            <div
+                id="alertaErro"
+                class="alerta-erro"
+            >
+                Aviso: Este CPF já está cadastrado no sistema!
+            </div>
+
+
+            <form
+                id="formCadastro"
+                onsubmit="cadastrarAluno(event)"
+            >
+
 
                 <div class="input-group">
-                    <label for="ensino">Cursando</label>
-                    <select id="ensino" onchange="verificarNivelEnsino(this.value)" required>
-                        <option value="" disabled selected>Selecione o que está cursando...</option>
-                        <option value="Fundamental">Ensino Fundamental</option>
-                        <option value="Médio">Ensino Médio</option>
+
+                    <label for="nome">
+                        Nome Completo do Aluno
+                    </label>
+
+                    <input
+                        type="text"
+                        id="nome"
+                        placeholder="DIGITE O NOME COMPLETO"
+                        required
+                    >
+
+                </div>
+
+
+                <div class="form-row">
+
+
+                    <div class="input-group">
+
+                        <label for="cpf">
+                            CPF (Apenas números)
+                        </label>
+
+                        <input
+                            type="text"
+                            id="cpf"
+                            placeholder="000.000.000-00"
+                            maxlength="14"
+                            oninput="mascaraCPF(this)"
+                            required
+                        >
+
+                    </div>
+
+
+                    <div class="input-group">
+
+                        <label for="dataNascimento">
+                            Data de Nascimento
+                        </label>
+
+                        <input
+                            type="date"
+                            id="dataNascimento"
+                            required
+                        >
+
+                    </div>
+
+
+                </div>
+
+
+                <div class="form-row">
+
+
+                    <div class="input-group">
+
+                        <label for="telefone">
+                            Telefone de Contato
+                        </label>
+
+                        <input
+                            type="text"
+                            id="telefone"
+                            placeholder="Ex: (27) 99999-9999"
+                            maxlength="15"
+                            oninput="mascaraTelefone(this)"
+                            required
+                        >
+
+                    </div>
+
+
+                    <div class="input-group">
+
+                        <label for="email">
+                            E-mail do Aluno
+                        </label>
+
+                        <input
+                            type="email"
+                            id="email"
+                            placeholder="exemplo@email.com"
+                            required
+                        >
+
+                    </div>
+
+
+                </div>
+
+
+                <div class="input-group">
+
+                    <label for="ensino">
+                        Cursando
+                    </label>
+
+                    <select
+                        id="ensino"
+                        onchange="verificarNivelEnsino(this.value)"
+                        required
+                    >
+
+                        <option
+                            value=""
+                            disabled
+                            selected
+                        >
+                            Selecione o que está cursando...
+                        </option>
+
+                        <option value="Fundamental">
+                            Ensino Fundamental
+                        </option>
+
+                        <option value="Médio">
+                            Ensino Médio
+                        </option>
+
                     </select>
+
                 </div>
 
-                <!-- SEÇÃO DE APROVEITAMENTO DE ETAPAS -->
-                <div id="boxEtapas" class="secao-etapas">
-                    <h3 id="tituloAproveitamento">Aproveitamento de Estudos</h3>
-                    <p>Marque as etapas que o aluno <strong>JÁ CONCLUIU</strong> em outra escola:</p>
-                    <div class="grid-disciplinas" id="listaDisciplinas"></div>
+
+                <!-- SEÇÃO DE APROVEITAMENTO -->
+
+                <div
+                    id="boxEtapas"
+                    class="secao-etapas"
+                >
+
+                    <h3 id="tituloAproveitamento">
+                        Aproveitamento de Estudos
+                    </h3>
+
+                    <p>
+                        Marque as etapas que o aluno
+                        <strong>JÁ CONCLUIU</strong>
+                        em outra escola:
+                    </p>
+
+                    <div
+                        class="grid-disciplinas"
+                        id="listaDisciplinas"
+                    ></div>
+
                 </div>
-                
-                <button type="submit" class="btn-salvar">Salvar Aluno</button>
+
+
+                <button
+                    type="submit"
+                    class="btn-salvar"
+                    id="btnSalvar"
+                >
+                    Salvar Aluno
+                </button>
+
+
             </form>
+
+
         </div>
+
+
     </div>
 
+
     <script>
-        window.mostrarErroFirebase = function(mensagem) {
-            const el = document.getElementById("alertaErro");
-            if (el) {
-                el.innerText = mensagem;
-                el.style.display = "block";
-            } else {
-                alert(mensagem);
-            }
-        };
+
+        /*
+         * ======================================================
+         * MENSAGEM DE ERRO DO FIREBASE
+         * ======================================================
+         */
+
+        window.mostrarErroFirebase =
+            function (mensagem) {
+
+                const el =
+                    document.getElementById(
+                        "alertaErro"
+                    );
+
+
+                if (el) {
+
+                    el.innerText =
+                        mensagem;
+
+                    el.style.display =
+                        "block";
+
+                }
+
+                else {
+
+                    alert(
+                        mensagem
+                    );
+
+                }
+
+            };
+
     </script>
+
+
+    <!-- FIREBASE -->
+
     <script src="firebase-cloud.js"></script>
-    <script id="ceeja-app-script" type="text/plain">
-        const perfilLogado = sessionStorage.getItem('perfilLogado');
-        if (!perfilLogado || (perfilLogado !== 'secretaria' && perfilLogado !== 'admin' && perfilLogado !== 'diretor')) {
-            alert("Acesso negado!");
-            window.location.href = 'index.html'; // Atualizado para index.html
+
+
+    <!-- CÓDIGO PRINCIPAL DA PÁGINA -->
+
+    <script
+        id="ceeja-app-script"
+        type="text/plain"
+    >
+
+
+        /*
+         * ======================================================
+         * CONTROLE DE ACESSO
+         * ======================================================
+         */
+
+        const perfilLogado =
+            sessionStorage.getItem(
+                'perfilLogado'
+            );
+
+
+        if (
+
+            !perfilLogado ||
+
+            (
+                perfilLogado !== 'secretaria' &&
+
+                perfilLogado !== 'admin' &&
+
+                perfilLogado !== 'diretor'
+            )
+
+        ) {
+
+            alert(
+                "Acesso negado!"
+            );
+
+            window.location.href =
+                'index.html';
+
         }
 
-        const disciplinasFundamental = ["Língua Portuguesa", "Matemática", "História", "Geografia", "Ciências", "Arte", "Língua Inglesa", "Mundo do Trabalho"];
-        const disciplinasMedio = ["Língua Portuguesa", "Matemática", "História", "Geografia", "Biologia", "Física", "Química", "Filosofia", "Sociologia", "Arte", "Língua Inglesa", "Mundo do Trabalho"];
 
-        const nomesEtapasFundamental = ["5ª Etapa / 6º Ano", "6ª Etapa / 7º Ano", "7ª Etapa / 8º Ano", "8ª Etapa / 9º Ano"];
-        const nomesEtapasMedio = ["1ª Etapa / 1ª Série", "2ª Etapa / 2ª Série", "3ª Etapa / 3ª Série"];
+        /*
+         * ======================================================
+         * DISCIPLINAS
+         * ======================================================
+         */
+
+        const disciplinasFundamental = [
+
+            "Língua Portuguesa",
+
+            "Matemática",
+
+            "História",
+
+            "Geografia",
+
+            "Ciências",
+
+            "Arte",
+
+            "Língua Inglesa",
+
+            "Mundo do Trabalho"
+
+        ];
+
+
+        const disciplinasMedio = [
+
+            "Língua Portuguesa",
+
+            "Matemática",
+
+            "História",
+
+            "Geografia",
+
+            "Biologia",
+
+            "Física",
+
+            "Química",
+
+            "Filosofia",
+
+            "Sociologia",
+
+            "Arte",
+
+            "Língua Inglesa",
+
+            "Mundo do Trabalho"
+
+        ];
+
+
+        const nomesEtapasFundamental = [
+
+            "5ª Etapa / 6º Ano",
+
+            "6ª Etapa / 7º Ano",
+
+            "7ª Etapa / 8º Ano",
+
+            "8ª Etapa / 9º Ano"
+
+        ];
+
+
+        const nomesEtapasMedio = [
+
+            "1ª Etapa / 1ª Série",
+
+            "2ª Etapa / 2ª Série",
+
+            "3ª Etapa / 3ª Série"
+
+        ];
+
 
         let disciplinasAtuais = [];
+
         let rotulosEtapasAtuais = [];
 
-        function verificarNivelEnsino(nivel) {
-            const boxEtapas = document.getElementById('boxEtapas');
-            const titulo = document.getElementById('tituloAproveitamento');
 
-            if (!nivel) { boxEtapas.style.display = 'none'; return; }
+        /*
+         * ======================================================
+         * ESCOLHER NÍVEL DE ENSINO
+         * ======================================================
+         */
 
-            if (nivel === 'Fundamental') {
-                disciplinasAtuais = disciplinasFundamental;
-                rotulosEtapasAtuais = nomesEtapasFundamental;
-            } else {
-                disciplinasAtuais = disciplinasMedio;
-                rotulosEtapasAtuais = nomesEtapasMedio;
-            }
+        function verificarNivelEnsino(
+            nivel
+        ) {
 
-            titulo.innerText = `Aproveitamento de Estudos - Ensino ${nivel}`;
-            montarGridDisciplinas(disciplinasAtuais, rotulosEtapasAtuais);
-            boxEtapas.style.display = 'block';
-        }
+            const boxEtapas =
+                document.getElementById(
+                    'boxEtapas'
+                );
 
-        function montarGridDisciplinas(disciplinas, rotulos) {
-            const container = document.getElementById('listaDisciplinas');
-            container.innerHTML = '';
 
-            const cabecalho = document.createElement('div');
-            cabecalho.className = 'linha-cabecalho';
-            let cabecalhoOpcoesHTML = '';
-            
-            rotulos.forEach((rotulo, idx) => {
-                const numEtapa = idx + 1;
-                cabecalhoOpcoesHTML += `<label><input type="checkbox" onchange="marcarColuna(${numEtapa}, this.checked)"> ${rotulo}</label>`;
-            });
+            const titulo =
+                document.getElementById(
+                    'tituloAproveitamento'
+                );
 
-            cabecalho.innerHTML = `<span class="nome-disciplina">Todas as Matérias</span><div class="opcoes-etapas">${cabecalhoOpcoesHTML}</div>`;
-            container.appendChild(cabecalho);
 
-            disciplinas.forEach(disc => {
-                const idSanitizado = disc.replace(/[^a-zA-Z0-9]/g, '');
-                const linha = document.createElement('div');
-                linha.className = 'linha-disciplina';
+            if (!nivel) {
 
-                let checkboxesHTML = '';
-                rotulos.forEach((rotulo, idx) => {
-                    const numEtapa = idx + 1;
-                    if (disc === 'Mundo do Trabalho' && numEtapa !== 1) {
-                        checkboxesHTML += `<label style="visibility: hidden;"><input type="checkbox" name="${idSanitizado}" data-etapa="${numEtapa}" value="${numEtapa}" disabled></label>`;
-                    } else {
-                        checkboxesHTML += `<label><input type="checkbox" name="${idSanitizado}" data-etapa="${numEtapa}" value="${numEtapa}"> ${rotulo}</label>`;
-                    }
-                });
+                boxEtapas.style.display =
+                    'none';
 
-                linha.innerHTML = `<span class="nome-disciplina">${disc}</span><div class="opcoes-etapas">${checkboxesHTML}</div>`;
-                container.appendChild(linha);
-            });
-        }
-
-        function marcarColuna(numeroEtapa, status) {
-            const checkboxes = document.querySelectorAll(`input[data-etapa="${numeroEtapa}"]:not([disabled])`);
-            checkboxes.forEach(cb => cb.checked = status);
-        }
-
-        function mascaraTelefone(input) {
-            let v = input.value.replace(/\D/g, "");
-            v = v.replace(/^(\d{2})(\d)/g, "($1) $2").replace(/(\d{5})(\d)/, "$1-$2");
-            input.value = v;
-        }
-
-        function mascaraCPF(input) {
-            let v = input.value.replace(/\D/g, "");
-            v = v.replace(/(\d{3})(\d)/, "$1.$2").replace(/(\d{3})(\d)/, "$1.$2").replace(/(\d{3})(\d{1,2})$/, "$1-$2");
-            input.value = v;
-        }
-
-        function gerarMatricula(ensino) {
-            const anoAtual = new Date().getFullYear().toString();
-            const codigoEnsino = (ensino === 'Fundamental') ? '1' : '2';
-            let controle = JSON.parse(localStorage.getItem('controleMatriculas')) || { ano: anoAtual, sequencial: 0 };
-
-            if (controle.ano !== anoAtual) { controle.ano = anoAtual; controle.sequencial = 0; }
-            controle.sequencial += 1;
-            localStorage.setItem('controleMatriculas', JSON.stringify(controle));
-
-            return `${anoAtual}${codigoEnsino}${String(controle.sequencial).padStart(4, '0')}`;
-        }
-
-        function cadastrarAluno(event) {
-            event.preventDefault();
-            let alunos = JSON.parse(localStorage.getItem('cadastroAlunos')) || [];
-            
-            const nomeInput = document.getElementById('nome').value.toUpperCase().trim();
-            const cpfLimpo = document.getElementById('cpf').value.replace(/\D/g, '');
-            const dataNascimentoInput = document.getElementById('dataNascimento').value;
-            const telefoneInput = document.getElementById('telefone').value;
-            const emailInput = document.getElementById('email').value.trim().toLowerCase();
-            const ensinoSelect = document.getElementById('ensino').value;
-            
-            const msgSucesso = document.getElementById('alertaSucesso');
-            const msgErro = document.getElementById('alertaErro');
-
-            msgSucesso.style.display = 'none';
-            msgErro.style.display = 'none';
-
-            if (alunos.some(aluno => aluno.cpf === cpfLimpo)) {
-                msgErro.style.display = 'block';
                 return;
+
             }
 
-            let historicoEtapas = {};
-            disciplinasAtuais.forEach(disc => {
-                const idSanitizado = disc.replace(/[^a-zA-Z0-9]/g, '');
-                const checkboxes = document.querySelectorAll(`input[name="${idSanitizado}"]`);
-                historicoEtapas[disc] = Array.from(checkboxes).map(cb => cb.checked);
-            });
 
-            const novaMatricula = gerarMatricula(ensinoSelect);
+            if (
+                nivel === 'Fundamental'
+            ) {
 
-            alunos.push({ 
-                matricula: novaMatricula,
-                nome: nomeInput, 
-                cpf: cpfLimpo, 
-                senha: cpfLimpo,
-                dataNascimento: dataNascimentoInput,
-                telefone: telefoneInput, 
-                email: emailInput,
-                ensino: ensinoSelect,
-                historico: historicoEtapas
-            });
+                disciplinasAtuais =
+                    disciplinasFundamental;
 
-            localStorage.setItem('cadastroAlunos', JSON.stringify(alunos));
+                rotulosEtapasAtuais =
+                    nomesEtapasFundamental;
 
-            document.getElementById('formCadastro').reset();
-            document.getElementById('boxEtapas').style.display = 'none';
-            msgSucesso.innerText = `Aluno cadastrado com sucesso! Matrícula: ${novaMatricula}`;
-            msgSucesso.style.display = 'block';
-            setTimeout(() => msgSucesso.style.display = 'none', 5000);
+            }
+
+            else {
+
+                disciplinasAtuais =
+                    disciplinasMedio;
+
+                rotulosEtapasAtuais =
+                    nomesEtapasMedio;
+
+            }
+
+
+            titulo.innerText =
+                `Aproveitamento de Estudos - Ensino ${nivel}`;
+
+
+            montarGridDisciplinas(
+
+                disciplinasAtuais,
+
+                rotulosEtapasAtuais
+
+            );
+
+
+            boxEtapas.style.display =
+                'block';
+
         }
+
+
+        /*
+         * ======================================================
+         * MONTAR GRID DE DISCIPLINAS
+         * ======================================================
+         */
+
+        function montarGridDisciplinas(
+
+            disciplinas,
+
+            rotulos
+
+        ) {
+
+            const container =
+                document.getElementById(
+                    'listaDisciplinas'
+                );
+
+
+            container.innerHTML =
+                '';
+
+
+            const cabecalho =
+                document.createElement(
+                    'div'
+                );
+
+
+            cabecalho.className =
+                'linha-cabecalho';
+
+
+            let cabecalhoOpcoesHTML =
+                '';
+
+
+            rotulos.forEach(
+
+                (
+                    rotulo,
+                    idx
+                ) => {
+
+                    const numEtapa =
+                        idx + 1;
+
+
+                    cabecalhoOpcoesHTML +=
+
+                        `<label>
+                            <input
+                                type="checkbox"
+                                onchange="marcarColuna(${numEtapa}, this.checked)"
+                            >
+                            ${rotulo}
+                        </label>`;
+
+                }
+
+            );
+
+
+            cabecalho.innerHTML =
+
+                `<span class="nome-disciplina">
+                    Todas as Matérias
+                </span>
+
+                <div class="opcoes-etapas">
+                    ${cabecalhoOpcoesHTML}
+                </div>`;
+
+
+            container.appendChild(
+                cabecalho
+            );
+
+
+            disciplinas.forEach(
+
+                disc => {
+
+                    const idSanitizado =
+                        disc.replace(
+                            /[^a-zA-Z0-9]/g,
+                            ''
+                        );
+
+
+                    const linha =
+                        document.createElement(
+                            'div'
+                        );
+
+
+                    linha.className =
+                        'linha-disciplina';
+
+
+                    let checkboxesHTML =
+                        '';
+
+
+                    rotulos.forEach(
+
+                        (
+                            rotulo,
+                            idx
+                        ) => {
+
+                            const numEtapa =
+                                idx + 1;
+
+
+                            if (
+
+                                disc ===
+                                'Mundo do Trabalho' &&
+
+                                numEtapa !== 1
+
+                            ) {
+
+                                checkboxesHTML +=
+
+                                    `<label style="visibility: hidden;">
+
+                                        <input
+                                            type="checkbox"
+                                            name="${idSanitizado}"
+                                            data-etapa="${numEtapa}"
+                                            value="${numEtapa}"
+                                            disabled
+                                        >
+
+                                    </label>`;
+
+                            }
+
+                            else {
+
+                                checkboxesHTML +=
+
+                                    `<label>
+
+                                        <input
+                                            type="checkbox"
+                                            name="${idSanitizado}"
+                                            data-etapa="${numEtapa}"
+                                            value="${numEtapa}"
+                                        >
+
+                                        ${rotulo}
+
+                                    </label>`;
+
+                            }
+
+                        }
+
+                    );
+
+
+                    linha.innerHTML =
+
+                        `<span class="nome-disciplina">
+                            ${disc}
+                        </span>
+
+                        <div class="opcoes-etapas">
+                            ${checkboxesHTML}
+                        </div>`;
+
+
+                    container.appendChild(
+                        linha
+                    );
+
+                }
+
+            );
+
+        }
+
+
+        /*
+         * ======================================================
+         * MARCAR COLUNA
+         * ======================================================
+         */
+
+        function marcarColuna(
+
+            numeroEtapa,
+
+            status
+
+        ) {
+
+            const checkboxes =
+                document.querySelectorAll(
+
+                    `input[data-etapa="${numeroEtapa}"]:not([disabled])`
+
+                );
+
+
+            checkboxes.forEach(
+
+                cb => {
+
+                    cb.checked =
+                        status;
+
+                }
+
+            );
+
+        }
+
+
+        /*
+         * ======================================================
+         * MÁSCARA TELEFONE
+         * ======================================================
+         */
+
+        function mascaraTelefone(
+            input
+        ) {
+
+            let v =
+                input.value.replace(
+                    /\D/g,
+                    ""
+                );
+
+
+            v =
+                v.replace(
+                    /^(\d{2})(\d)/g,
+                    "($1) $2"
+                );
+
+
+            v =
+                v.replace(
+                    /(\d{5})(\d)/,
+                    "$1-$2"
+                );
+
+
+            input.value =
+                v;
+
+        }
+
+
+        /*
+         * ======================================================
+         * MÁSCARA CPF
+         * ======================================================
+         */
+
+        function mascaraCPF(
+            input
+        ) {
+
+            let v =
+                input.value.replace(
+                    /\D/g,
+                    ""
+                );
+
+
+            v =
+                v.replace(
+                    /(\d{3})(\d)/,
+                    "$1.$2"
+                );
+
+
+            v =
+                v.replace(
+                    /(\d{3})(\d)/,
+                    "$1.$2"
+                );
+
+
+            v =
+                v.replace(
+                    /(\d{3})(\d{1,2})$/,
+                    "$1-$2"
+                );
+
+
+            input.value =
+                v;
+
+        }
+
+
+        /*
+         * ======================================================
+         * GERAR MATRÍCULA
+         * ======================================================
+         */
+
+        function gerarMatricula(
+            ensino
+        ) {
+
+            const anoAtual =
+                new Date()
+                    .getFullYear()
+                    .toString();
+
+
+            const codigoEnsino =
+                ensino === 'Fundamental'
+                    ? '1'
+                    : '2';
+
+
+            let controle =
+                JSON.parse(
+
+                    localStorage.getItem(
+                        'controleMatriculas'
+                    )
+
+                ) || {
+
+                    ano:
+                        anoAtual,
+
+                    sequencial:
+                        0
+
+                };
+
+
+            if (
+                controle.ano !==
+                anoAtual
+            ) {
+
+                controle.ano =
+                    anoAtual;
+
+                controle.sequencial =
+                    0;
+
+            }
+
+
+            controle.sequencial +=
+                1;
+
+
+            localStorage.setItem(
+
+                'controleMatriculas',
+
+                JSON.stringify(
+                    controle
+                )
+
+            );
+
+
+            return (
+
+                `${anoAtual}${codigoEnsino}${String(controle.sequencial).padStart(4, '0')}`
+
+            );
+
+        }
+
+
+        /*
+         * ======================================================
+         * CADASTRAR ALUNO
+         * ======================================================
+         *
+         * AGORA ESTA FUNÇÃO É ASSÍNCRONA.
+         *
+         * Ela só informa "sucesso" depois que o Firebase
+         * confirmar a gravação.
+         */
+
+        async function cadastrarAluno(
+            event
+        ) {
+
+            event.preventDefault();
+
+
+            const msgSucesso =
+                document.getElementById(
+                    'alertaSucesso'
+                );
+
+
+            const msgErro =
+                document.getElementById(
+                    'alertaErro'
+                );
+
+
+            const botao =
+                document.getElementById(
+                    'btnSalvar'
+                );
+
+
+            msgSucesso.style.display =
+                'none';
+
+
+            msgErro.style.display =
+                'none';
+
+
+            /*
+             * --------------------------------------------------
+             * VERIFICAR FIREBASE
+             * --------------------------------------------------
+             */
+
+            if (
+
+                !window.CEEJAFirebase ||
+
+                !window.CEEJAFirebase.pronto
+
+            ) {
+
+                msgErro.innerText =
+
+                    "O Firebase não está conectado. " +
+
+                    (
+                        window.CEEJAFirebase &&
+                        window.CEEJAFirebase.erro
+
+                            ? window.CEEJAFirebase.erro
+
+                            : "Aguarde alguns segundos e tente novamente."
+                    );
+
+
+                msgErro.style.display =
+                    'block';
+
+
+                return;
+
+            }
+
+
+            /*
+             * --------------------------------------------------
+             * CARREGAR ALUNOS
+             * --------------------------------------------------
+             */
+
+            let alunos =
+                JSON.parse(
+
+                    localStorage.getItem(
+                        'cadastroAlunos'
+                    )
+
+                ) || [];
+
+
+            /*
+             * --------------------------------------------------
+             * PEGAR DADOS DO FORMULÁRIO
+             * --------------------------------------------------
+             */
+
+            const nomeInput =
+                document.getElementById(
+                    'nome'
+                )
+                .value
+                .toUpperCase()
+                .trim();
+
+
+            const cpfLimpo =
+                document.getElementById(
+                    'cpf'
+                )
+                .value
+                .replace(
+                    /\D/g,
+                    ''
+                );
+
+
+            const dataNascimentoInput =
+                document.getElementById(
+                    'dataNascimento'
+                ).value;
+
+
+            const telefoneInput =
+                document.getElementById(
+                    'telefone'
+                ).value;
+
+
+            const emailInput =
+                document.getElementById(
+                    'email'
+                )
+                .value
+                .trim()
+                .toLowerCase();
+
+
+            const ensinoSelect =
+                document.getElementById(
+                    'ensino'
+                ).value;
+
+
+            /*
+             * --------------------------------------------------
+             * VERIFICAR CPF DUPLICADO
+             * --------------------------------------------------
+             */
+
+            if (
+
+                alunos.some(
+
+                    aluno =>
+                        aluno.cpf ===
+                        cpfLimpo
+
+                )
+
+            ) {
+
+                msgErro.innerText =
+                    "Aviso: Este CPF já está cadastrado no sistema!";
+
+
+                msgErro.style.display =
+                    'block';
+
+
+                return;
+
+            }
+
+
+            /*
+             * --------------------------------------------------
+             * HISTÓRICO
+             * --------------------------------------------------
+             */
+
+            let historicoEtapas =
+                {};
+
+
+            disciplinasAtuais.forEach(
+
+                disc => {
+
+                    const idSanitizado =
+                        disc.replace(
+                            /[^a-zA-Z0-9]/g,
+                            ''
+                        );
+
+
+                    const checkboxes =
+                        document.querySelectorAll(
+
+                            `input[name="${idSanitizado}"]`
+
+                        );
+
+
+                    historicoEtapas[disc] =
+
+                        Array.from(
+                            checkboxes
+                        )
+                        .map(
+                            cb =>
+                                cb.checked
+                        );
+
+                }
+
+            );
+
+
+            /*
+             * --------------------------------------------------
+             * GERAR MATRÍCULA
+             * --------------------------------------------------
+             */
+
+            const novaMatricula =
+                gerarMatricula(
+                    ensinoSelect
+                );
+
+
+            /*
+             * --------------------------------------------------
+             * MONTAR ALUNO
+             * --------------------------------------------------
+             */
+
+            const novoAluno = {
+
+                matricula:
+                    novaMatricula,
+
+                nome:
+                    nomeInput,
+
+                cpf:
+                    cpfLimpo,
+
+                senha:
+                    cpfLimpo,
+
+                dataNascimento:
+                    dataNascimentoInput,
+
+                telefone:
+                    telefoneInput,
+
+                email:
+                    emailInput,
+
+                ensino:
+                    ensinoSelect,
+
+                historico:
+                    historicoEtapas
+
+            };
+
+
+            /*
+             * --------------------------------------------------
+             * DESABILITAR BOTÃO
+             * --------------------------------------------------
+             */
+
+            botao.disabled =
+                true;
+
+
+            botao.innerText =
+                "Salvando no Firebase...";
+
+
+            try {
+
+
+                /*
+                 * ------------------------------------------------
+                 * CRIAR CÓPIA DOS ALUNOS
+                 * ------------------------------------------------
+                 */
+
+                const alunosParaSalvar =
+                    alunos.concat(
+                        novoAluno
+                    );
+
+
+                /*
+                 * ------------------------------------------------
+                 * SALVAR DIRETAMENTE NO FIREBASE
+                 * ------------------------------------------------
+                 *
+                 * Só continuamos se o Firestore confirmar.
+                 */
+
+                await window.CEEJAFirebase
+
+                    .salvarColecao(
+
+                        "cadastroAlunos",
+
+                        JSON.stringify(
+                            alunosParaSalvar
+                        )
+
+                    );
+
+
+                /*
+                 * ------------------------------------------------
+                 * AGORA SIM SALVAR LOCALMENTE
+                 * ------------------------------------------------
+                 */
+
+                localStorage.setItem(
+
+                    'cadastroAlunos',
+
+                    JSON.stringify(
+                        alunosParaSalvar
+                    )
+
+                );
+
+
+                /*
+                 * ------------------------------------------------
+                 * SUCESSO
+                 * ------------------------------------------------
+                 */
+
+                document
+                    .getElementById(
+                        'formCadastro'
+                    )
+                    .reset();
+
+
+                document
+                    .getElementById(
+                        'boxEtapas'
+                    )
+                    .style.display =
+                    'none';
+
+
+                msgSucesso.innerText =
+
+                    `Aluno cadastrado com sucesso! Matrícula: ${novaMatricula}`;
+
+
+                msgSucesso.style.display =
+                    'block';
+
+
+                setTimeout(
+
+                    () => {
+
+                        msgSucesso.style.display =
+                            'none';
+
+                    },
+
+                    5000
+
+                );
+
+            }
+
+
+            catch (erro) {
+
+                console.error(
+
+                    "Erro ao cadastrar aluno:",
+
+                    erro
+
+                );
+
+
+                const codigo =
+                    erro &&
+                    erro.code
+
+                        ? ` (${erro.code})`
+
+                        : "";
+
+
+                const detalhe =
+                    erro &&
+                    erro.message
+
+                        ? erro.message
+
+                        : String(
+                            erro
+                        );
+
+
+                msgErro.innerText =
+
+                    `Não foi possível salvar o aluno no Firebase${codigo}. ${detalhe}`;
+
+
+                msgErro.style.display =
+                    'block';
+
+            }
+
+
+            finally {
+
+                botao.disabled =
+                    false;
+
+
+                botao.innerText =
+                    "Salvar Aluno";
+
+            }
+
+        }
+
+
     </script>
+
+
 </body>
+
 </html>
