@@ -522,7 +522,6 @@
 
     <script
         id="ceeja-app-script"
-        type="text/plain"
     >
 
 
@@ -1114,58 +1113,6 @@
          * confirmar a gravação.
          */
 
-
-        /*
-         * ======================================================
-         * AGUARDAR FIREBASE
-         * ======================================================
-         */
-        function aguardarFirebase(tempoMaximo = 15000) {
-
-            return new Promise(function(resolve, reject) {
-
-                const inicio = Date.now();
-
-                function verificar() {
-
-                    if (
-                        window.CEEJAFirebase &&
-                        window.CEEJAFirebase.pronto &&
-                        typeof window.CEEJAFirebase.salvarColecao === 'function'
-                    ) {
-                        resolve();
-                        return;
-                    }
-
-                    if (
-                        window.CEEJAFirebase &&
-                        window.CEEJAFirebase.erro
-                    ) {
-                        reject(
-                            new Error(
-                                window.CEEJAFirebase.erro
-                            )
-                        );
-                        return;
-                    }
-
-                    if (Date.now() - inicio >= tempoMaximo) {
-                        reject(
-                            new Error(
-                                "O Firebase não respondeu dentro do tempo esperado."
-                            )
-                        );
-                        return;
-                    }
-
-                    setTimeout(verificar, 300);
-                }
-
-                verificar();
-            });
-        }
-
-
         async function cadastrarAluno(
             event
         ) {
@@ -1205,27 +1152,48 @@
              * --------------------------------------------------
              */
 
-            try {
 
-                await aguardarFirebase();
+            /*
+             * --------------------------------------------------
+             * AGUARDAR FIREBASE
+             * --------------------------------------------------
+             */
+
+            let tentativasFirebase = 0;
+
+            while (
+                (
+                    !window.CEEJAFirebase ||
+                    !window.CEEJAFirebase.pronto ||
+                    typeof window.CEEJAFirebase.salvarColecao !== 'function'
+                ) &&
+                tentativasFirebase < 50
+            ) {
+
+                await new Promise(
+                    resolve => setTimeout(resolve, 200)
+                );
+
+                tentativasFirebase++;
 
             }
 
-            catch (erroFirebase) {
 
-                console.error(
-                    "CEEJA: Firebase não está pronto:",
-                    erroFirebase
-                );
+            if (
+                !window.CEEJAFirebase ||
+                !window.CEEJAFirebase.pronto ||
+                typeof window.CEEJAFirebase.salvarColecao !== 'function'
+            ) {
+
+                const detalhe =
+                    window.CEEJAFirebase &&
+                    window.CEEJAFirebase.erro
+                        ? String(window.CEEJAFirebase.erro)
+                        : "O Firebase ainda não terminou de carregar.";
 
                 msgErro.innerText =
                     "Não foi possível conectar ao Firebase. " +
-                    (
-                        erroFirebase &&
-                        erroFirebase.message
-                            ? erroFirebase.message
-                            : "Aguarde alguns segundos e tente novamente."
-                    );
+                    detalhe;
 
                 msgErro.style.display =
                     'block';
@@ -1316,7 +1284,7 @@
                 alunos.some(
 
                     aluno =>
-                        String(aluno.cpf || '').replace(/\D/g, '') ===
+                        aluno.cpf ===
                         cpfLimpo
 
                 )
@@ -1599,41 +1567,32 @@
         }
 
 
-    
+
         /*
          * ======================================================
-         * RESTAURAR APROVEITAMENTO AO ABRIR A PÁGINA
+         * INICIALIZAÇÃO DA SEÇÃO DE APROVEITAMENTO
          * ======================================================
-         *
-         * Alguns navegadores restauram o valor do select
-         * sem disparar o onchange.
          */
 
-        document.addEventListener(
-            'DOMContentLoaded',
-            function () {
+        (function () {
 
-                const ensino =
-                    document.getElementById(
-                        'ensino'
-                    );
+            const ensino =
+                document.getElementById('ensino');
 
-                if (
-                    ensino &&
+            if (
+                ensino &&
+                ensino.value
+            ) {
+
+                verificarNivelEnsino(
                     ensino.value
-                ) {
-
-                    verificarNivelEnsino(
-                        ensino.value
-                    );
-
-                }
+                );
 
             }
-        );
 
+        })();
 
-</script>
+    </script>
 
 
 </body>
