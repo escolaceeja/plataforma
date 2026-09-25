@@ -89,12 +89,8 @@
         </div>
     </div>
 
-    <!-- IMPORTANTE: carregar o Firebase antes do código da página -->
     <script src="firebase-cloud.js"></script>
-
-    <!-- O firebase-cloud.js executa este código somente depois de carregar os dados -->
     <script id="ceeja-app-script" type="text/plain">
-
         const disciplinasMedio = [
             "Língua Portuguesa", "Matemática", "História", "Geografia", 
             "Biologia", "Física", "Química", "Filosofia", "Sociologia", 
@@ -102,29 +98,15 @@
         ];
 
         const nomesEtapas = [
-            "1ª Etapa / 1ª Série", 
-            "2ª Etapa / 2ª Série", 
-            "3ª Etapa / 3ª Série"
+            "1ª Etapa / 1ª Série", "2ª Etapa / 2ª Série", "3ª Etapa / 3ª Série"
         ];
 
         function extrairValorNota(obj) {
             if (obj === undefined || obj === null || obj === '') return '';
-
-            if (typeof obj === 'number' || typeof obj === 'string') {
-                return String(obj);
-            }
-
+            if (typeof obj === 'number' || typeof obj === 'string') return String(obj);
             if (typeof obj === 'object') {
-                return String(
-                    obj.mediaFinal ??
-                    obj.media ??
-                    obj.notaFinal ??
-                    obj.nota ??
-                    obj.valor ??
-                    ''
-                );
+                return String(obj.mediaFinal ?? obj.media ?? obj.notaFinal ?? obj.nota ?? obj.valor ?? '');
             }
-
             return '';
         }
 
@@ -134,66 +116,34 @@
             const codEtapa = ['E1', 'E2', 'E3'][idxEtapa];
 
             if (aluno.notasEtapasUf && codEtapa) {
-
-                const keyDiscEtapa =
-                    `${codEtapa}_${disc.replace(/\s+/g, '_')}`;
-
-                const ufsDaDisciplina =
-                    aluno.notasEtapasUf[keyDiscEtapa];
+                const keyDiscEtapa = `${codEtapa}_${disc.replace(/\s+/g, '_')}`;
+                const ufsDaDisciplina = aluno.notasEtapasUf[keyDiscEtapa];
 
                 if (ufsDaDisciplina) {
-
                     let somaTotais = 0;
                     let qtdUfsLancadas = 0;
 
                     Object.keys(ufsDaDisciplina).forEach(ufKey => {
-
                         const ufData = ufsDaDisciplina[ufKey];
-
-                        if (
-                            ufData &&
-                            ufData.total !== undefined &&
-                            ufData.total !== ''
-                        ) {
+                        if (ufData && ufData.total !== undefined && ufData.total !== '') {
                             somaTotais += parseInt(ufData.total, 10);
                             qtdUfsLancadas++;
                         }
-
                     });
 
                     if (qtdUfsLancadas > 0) {
-                        return String(
-                            Math.round(
-                                somaTotais / qtdUfsLancadas
-                            )
-                        );
+                        return String(Math.round(somaTotais / qtdUfsLancadas));
                     }
                 }
             }
 
-            const fontesAluno = [
-                aluno.notas,
-                aluno.notas_professor,
-                aluno.boletim
-            ];
-
+            const fontesAluno = [aluno.notas, aluno.notas_professor, aluno.boletim];
             for (let f of fontesAluno) {
-
                 if (!f) continue;
-
                 if (f[disc]) {
-
-                    let v =
-                        f[disc][idxEtapa] ??
-                        f[disc][numEtapa] ??
-                        f[disc][String(numEtapa)];
-
-                    let notaExtracao =
-                        extrairValorNota(v);
-
-                    if (notaExtracao !== '') {
-                        return notaExtracao;
-                    }
+                    let v = f[disc][idxEtapa] ?? f[disc][numEtapa] ?? f[disc][String(numEtapa)];
+                    let notaExtracao = extrairValorNota(v);
+                    if (notaExtracao !== '') return notaExtracao;
                 }
             }
 
@@ -201,261 +151,118 @@
         }
 
         function carregarAlunos() {
-
-            const container =
-                document.getElementById('listaAlunos');
-
-            const todosAlunos =
-                JSON.parse(
-                    localStorage.getItem('cadastroAlunos')
-                ) || [];
-
-            const alunosMedio =
-                todosAlunos.filter(
-                    a => a.ensino === 'Médio'
-                );
+            const container = document.getElementById('listaAlunos');
+            const todosAlunos = JSON.parse(localStorage.getItem('cadastroAlunos')) || [];
+            const alunosMedio = todosAlunos.filter(a => a.ensino === 'Médio');
 
             if (alunosMedio.length === 0) {
-
-                container.innerHTML =
-                    '<div class="sem-alunos">Nenhum aluno cadastrado no Ensino Médio.</div>';
-
+                container.innerHTML = '<div class="sem-alunos">Nenhum aluno cadastrado no Ensino Médio.</div>';
                 return;
             }
 
             container.innerHTML = '';
 
             alunosMedio.forEach(aluno => {
-
-                const wrapper =
-                    document.createElement('div');
-
-                wrapper.className =
-                    'aluno-wrapper';
-
-                wrapper.dataset.busca =
-                    `${aluno.nome} ${aluno.cpf} ${aluno.matricula || ''}`
-                    .toLowerCase();
+                const wrapper = document.createElement('div');
+                wrapper.className = 'aluno-wrapper';
+                wrapper.dataset.busca = `${aluno.nome} ${aluno.cpf} ${aluno.matricula || ''}`.toLowerCase();
 
                 let cabecalhoEtapasHTML = '';
-
                 nomesEtapas.forEach((rotulo, idx) => {
-
                     const numEtapa = idx + 1;
-
-                    cabecalhoEtapasHTML += `
-                        <label>
-                            <input
-                                type="checkbox"
-                                onchange="marcarColunaAluno('${aluno.cpf}', ${numEtapa}, this.checked)"
-                            >
-                            ${rotulo}
-                        </label>
-                    `;
+                    cabecalhoEtapasHTML += `<label><input type="checkbox" onchange="marcarColunaAluno('${aluno.cpf}', ${numEtapa}, this.checked)"> ${rotulo}</label>`;
                 });
 
                 let disciplinasHTML = '';
-
                 disciplinasMedio.forEach(disc => {
-
                     let checkboxesHTML = '';
-
                     nomesEtapas.forEach((rotulo, idx) => {
-
                         const numEtapa = idx + 1;
 
-                        const notaProfessor =
-                            obterMediaFinalProfessor(
-                                aluno,
-                                disc,
-                                idx,
-                                numEtapa
-                            );
+                        const mediaProf = obterMediaFinalProfessor(aluno, disc, idx, numEtapa);
+                        const temNotaProf = (mediaProf !== '');
 
-                        const bloqueadoProfessor =
-                            notaProfessor !== '';
+                        const marcadoHistorico = (aluno.historico && aluno.historico[disc] && aluno.historico[disc][idx]);
+                        const notaSecretaria = (aluno.notas_secretaria && aluno.notas_secretaria[disc] && aluno.notas_secretaria[disc][idx]) ? aluno.notas_secretaria[disc][idx] : '';
 
-                        let notaSecretaria = '';
-
-                        if (
-                            aluno.notas_secretaria &&
-                            aluno.notas_secretaria[disc] &&
-                            aluno.notas_secretaria[disc][idx] !== undefined
-                        ) {
-                            notaSecretaria =
-                                aluno.notas_secretaria[disc][idx];
+                        if (disc === 'Mundo do Trabalho' && numEtapa !== 1) {
+                            checkboxesHTML += `<div class="box-etapa-item" style="visibility: hidden;"><input type="checkbox" disabled><input type="text" class="input-nota-final" disabled></div>`;
+                        } else if (temNotaProf) {
+                            checkboxesHTML += `
+                                <div class="box-etapa-item bloqueado-prof" title="Média Final lançada pelo professor.">
+                                    <label>
+                                        <input type="checkbox" data-cpf="${aluno.cpf}" data-disc="${disc}" data-etapa="${numEtapa}" checked disabled>
+                                        ${rotulo}
+                                    </label>
+                                    <input type="text" class="input-nota-final" value="${mediaProf} (PROF)" readonly disabled>
+                                </div>
+                            `;
+                        } else if (marcadoHistorico || notaSecretaria !== '') {
+                            let valorExibicao = notaSecretaria !== '' ? `${notaSecretaria} (SEC)` : 'HIST. APROV.';
+                            checkboxesHTML += `
+                                <div class="box-etapa-item bloqueado-sec" title="Lançado pela Secretaria">
+                                    <label>
+                                        <input type="checkbox" data-cpf="${aluno.cpf}" data-disc="${disc}" data-etapa="${numEtapa}" checked onchange="aoAlterarCheckbox('${aluno.cpf}', '${disc}', ${numEtapa}, this.checked)">
+                                        ${rotulo}
+                                    </label>
+                                    <input type="text" class="input-nota-final" value="${valorExibicao}" 
+                                        placeholder=""
+                                        data-cpf="${aluno.cpf}" data-disc="${disc}" data-etapa="${numEtapa}"
+                                        onchange="aoDigitarNota('${aluno.cpf}', '${disc}', ${numEtapa}, this.value)"
+                                        onblur="aoBlurNota(this, '${aluno.cpf}', '${disc}', ${numEtapa})">
+                                </div>
+                            `;
+                        } else {
+                            checkboxesHTML += `
+                                <div class="box-etapa-item">
+                                    <label>
+                                        <input type="checkbox" data-cpf="${aluno.cpf}" data-disc="${disc}" data-etapa="${numEtapa}" onchange="aoAlterarCheckbox('${aluno.cpf}', '${disc}', ${numEtapa}, this.checked)">
+                                        ${rotulo}
+                                    </label>
+                                    <input type="text" class="input-nota-final" value="" placeholder=""
+                                        data-cpf="${aluno.cpf}" data-disc="${disc}" data-etapa="${numEtapa}"
+                                        onchange="aoDigitarNota('${aluno.cpf}', '${disc}', ${numEtapa}, this.value)"
+                                        onblur="aoBlurNota(this, '${aluno.cpf}', '${disc}', ${numEtapa})">
+                                </div>
+                            `;
                         }
-
-                        let historicoMarcado = false;
-
-                        if (
-                            aluno.historico &&
-                            aluno.historico[disc] &&
-                            aluno.historico[disc][idx]
-                        ) {
-                            historicoMarcado = true;
-                        }
-
-                        const valorNota =
-                            bloqueadoProfessor
-                                ? `${notaProfessor} (PROF.)`
-                                : notaSecretaria;
-
-                        const desabilitado =
-                            bloqueadoProfessor
-                                ? 'disabled'
-                                : '';
-
-                        checkboxesHTML += `
-                            <div class="box-etapa-item ${
-                                bloqueadoProfessor
-                                    ? 'bloqueado-prof'
-                                    : ''
-                            }">
-
-                                <label>
-
-                                    <input
-                                        type="checkbox"
-                                        data-cpf="${aluno.cpf}"
-                                        data-disc="${disc}"
-                                        data-etapa="${numEtapa}"
-                                        ${
-                                            historicoMarcado ||
-                                            bloqueadoProfessor
-                                                ? 'checked'
-                                                : ''
-                                        }
-                                        ${desabilitado}
-                                        onchange="aoAlterarCheckbox('${aluno.cpf}', '${disc}', ${numEtapa}, this.checked)"
-                                    >
-
-                                    ${rotulo}
-
-                                </label>
-
-                                <input
-                                    type="text"
-                                    class="input-nota-final"
-                                    value="${valorNota}"
-                                    placeholder=""
-                                    data-cpf="${aluno.cpf}"
-                                    data-disc="${disc}"
-                                    data-etapa="${numEtapa}"
-                                    ${
-                                        bloqueadoProfessor
-                                            ? 'disabled'
-                                            : ''
-                                    }
-                                    onchange="aoDigitarNota('${aluno.cpf}', '${disc}', ${numEtapa}, this.value)"
-                                    onblur="aoBlurNota(this, '${aluno.cpf}', '${disc}', ${numEtapa})"
-                                >
-
-                            </div>
-                        `;
                     });
 
                     disciplinasHTML += `
                         <div class="linha-disciplina">
-
-                            <span class="nome-disciplina">
-                                ${disc}
-                            </span>
-
-                            <div class="opcoes-etapas">
-                                ${checkboxesHTML}
-                            </div>
-
+                            <span class="nome-disciplina">${disc}</span>
+                            <div class="opcoes-etapas">${checkboxesHTML}</div>
                         </div>
                     `;
                 });
 
                 wrapper.innerHTML = `
-
                     <div class="aluno-item">
-
                         <div class="aluno-linha-dados">
-
-                            <h3>
-                                ${aluno.nome}
-                            </h3>
-
+                            <h3>${aluno.nome}</h3>
                             <div class="badges-direita">
-
-                                <span class="badge-cpf">
-                                    CPF: ${aluno.cpf}
-                                </span>
-
-                                <span class="badge-matricula">
-                                    Matrícula:
-                                    ${aluno.matricula || 'N/A'}
-                                </span>
-
+                                <span class="badge-cpf">CPF: ${aluno.cpf}</span>
+                                <span class="badge-matricula">Matrícula: ${aluno.matricula || 'N/A'}</span>
                             </div>
-
                         </div>
-
                         <div class="aluno-acoes">
-
-                            <button
-                                class="btn-acao btn-info"
-                                onclick="verInformacoes('${aluno.cpf}')"
-                            >
-                                👁️ Ver Info
-                            </button>
-
-                            <button
-                                class="btn-acao btn-editar"
-                                onclick="toggleEditar('${aluno.cpf}')"
-                            >
-                                ✏️ Editar Etapas
-                            </button>
-
-                            <button
-                                class="btn-acao btn-excluir"
-                                onclick="excluirAluno('${aluno.cpf}')"
-                            >
-                                🗑️ Excluir
-                            </button>
-
+                            <button class="btn-acao btn-info" onclick="verInformacoes('${aluno.cpf}')">👁️ Ver Info</button>
+                            <button class="btn-acao btn-editar" onclick="toggleEditar('${aluno.cpf}')">✏️ Editar Etapas</button>
+                            <button class="btn-acao btn-excluir" onclick="excluirAluno('${aluno.cpf}')">🗑️ Excluir</button>
                         </div>
-
                     </div>
 
-                    <div
-                        id="painel-${aluno.cpf}"
-                        class="painel-edicao"
-                    >
-
+                    <div id="painel-${aluno.cpf}" class="painel-edicao">
                         <div class="topo-painel-acoes">
-
-                            <button
-                                class="btn-salvar-painel"
-                                onclick="recarregarEConfirmar('${aluno.cpf}')"
-                            >
-                                🔄 Atualizar
-                            </button>
-
+                            <button class="btn-salvar-painel" onclick="recarregarEConfirmar('${aluno.cpf}')">🔄 Atualizar</button>
                         </div>
-
                         <div class="grid-disciplinas">
-
                             <div class="linha-cabecalho">
-
-                                <span class="nome-disciplina">
-                                    Marcar Coluna Inteira
-                                </span>
-
-                                <div class="opcoes-etapas">
-                                    ${cabecalhoEtapasHTML}
-                                </div>
-
+                                <span class="nome-disciplina">Marcar Coluna Inteira</span>
+                                <div class="opcoes-etapas">${cabecalhoEtapasHTML}</div>
                             </div>
-
                             ${disciplinasHTML}
-
                         </div>
-
                     </div>
                 `;
 
@@ -463,418 +270,164 @@
             });
         }
 
-        function aoAlterarCheckbox(
-            cpf,
-            disc,
-            etapa,
-            marcado
-        ) {
-
-            const inputNota =
-                document.querySelector(
-                    `input[type="text"][data-cpf="${cpf}"][data-disc="${disc}"][data-etapa="${etapa}"]`
-                );
-
+        function aoAlterarCheckbox(cpf, disc, etapa, marcado) {
+            const inputNota = document.querySelector(`input[type="text"][data-cpf="${cpf}"][data-disc="${disc}"][data-etapa="${etapa}"]`);
             if (inputNota) {
-
                 if (!marcado) {
                     inputNota.value = '';
-
-                } else if (
-                    inputNota.value.trim() === ''
-                ) {
+                } else if (inputNota.value.trim() === '') {
                     inputNota.value = 'HIST. APROV.';
                 }
             }
-
             salvarAlteracoesModoSilencioso(cpf);
         }
 
         function validarNotaMinima(valor) {
-
-            let numStr =
-                valor
-                    .replace('(SEC)', '')
-                    .replace('HIST. APROV.', '')
-                    .trim();
-
+            let numStr = valor.replace('(SEC)', '').replace('HIST. APROV.', '').trim();
             if (numStr === '') return true;
-
-            let num =
-                parseFloat(numStr);
-
+            let num = parseFloat(numStr);
             return !isNaN(num) && num >= 60;
         }
 
-        function aoDigitarNota(
-            cpf,
-            disc,
-            etapa,
-            valor
-        ) {
-
-            const cb =
-                document.querySelector(
-                    `input[type="checkbox"][data-cpf="${cpf}"][data-disc="${disc}"][data-etapa="${etapa}"]`
-                );
-
-            const inputNota =
-                document.querySelector(
-                    `input[type="text"][data-cpf="${cpf}"][data-disc="${disc}"][data-etapa="${etapa}"]`
-                );
+        function aoDigitarNota(cpf, disc, etapa, valor) {
+            const cb = document.querySelector(`input[type="checkbox"][data-cpf="${cpf}"][data-disc="${disc}"][data-etapa="${etapa}"]`);
+            const inputNota = document.querySelector(`input[type="text"][data-cpf="${cpf}"][data-disc="${disc}"][data-etapa="${etapa}"]`);
 
             if (valor.trim() !== '') {
-
                 if (!validarNotaMinima(valor)) {
-
-                    alert(
-                        'Nota inválida! O valor mínimo permitido é 60.'
-                    );
-
-                    if (inputNota)
-                        inputNota.value = '';
-
-                    if (cb)
-                        cb.checked = false;
-
+                    alert('Nota inválida! O valor mínimo permitido é 60.');
+                    if (inputNota) inputNota.value = '';
+                    if (cb) cb.checked = false;
                 } else {
-
-                    if (cb)
-                        cb.checked = true;
+                    if (cb) cb.checked = true;
                 }
-
             } else {
-
-                if (cb)
-                    cb.checked = false;
+                if (cb) cb.checked = false;
             }
-
             salvarAlteracoesModoSilencioso(cpf);
         }
 
-        function aoBlurNota(
-            inputElement,
-            cpf,
-            disc,
-            etapa
-        ) {
-
-            if (
-                inputElement.value.trim() !== '' &&
-                !validarNotaMinima(inputElement.value)
-            ) {
-
-                alert(
-                    'Nota inválida! O valor mínimo permitido é 60.'
-                );
-
+        function aoBlurNota(inputElement, cpf, disc, etapa) {
+            if (inputElement.value.trim() !== '' && !validarNotaMinima(inputElement.value)) {
+                alert('Nota inválida! O valor mínimo permitido é 60.');
                 inputElement.value = '';
-
-                const cb =
-                    document.querySelector(
-                        `input[type="checkbox"][data-cpf="${cpf}"][data-disc="${disc}"][data-etapa="${etapa}"]`
-                    );
-
-                if (cb)
-                    cb.checked = false;
-
+                const cb = document.querySelector(`input[type="checkbox"][data-cpf="${cpf}"][data-disc="${disc}"][data-etapa="${etapa}"]`);
+                if (cb) cb.checked = false;
                 salvarAlteracoesModoSilencioso(cpf);
             }
         }
 
         function verInformacoes(cpf) {
-
-            const todosAlunos =
-                JSON.parse(
-                    localStorage.getItem('cadastroAlunos')
-                ) || [];
-
-            const aluno =
-                todosAlunos.find(
-                    a => a.cpf === cpf
-                );
+            const todosAlunos = JSON.parse(localStorage.getItem('cadastroAlunos')) || [];
+            const aluno = todosAlunos.find(a => a.cpf === cpf);
 
             if (aluno) {
+                const dataNasc = aluno.dataNascimento ? aluno.dataNascimento.split('-').reverse().join('/') : 'Não informada';
 
-                const dataNasc =
-                    aluno.dataNascimento
-                        ? aluno.dataNascimento
-                            .split('-')
-                            .reverse()
-                            .join('/')
-                        : 'Não informada';
-
-                document.getElementById(
-                    'modalInfoBody'
-                ).innerHTML = `
-
-                    <p>
-                        <strong>Nome Completo:</strong>
-                        ${aluno.nome}
-                    </p>
-
-                    <p>
-                        <strong>CPF:</strong>
-                        ${aluno.cpf}
-                    </p>
-
-                    <p>
-                        <strong>Matrícula:</strong>
-                        ${aluno.matricula || 'N/A'}
-                    </p>
-
-                    <p>
-                        <strong>Data de Nascimento:</strong>
-                        ${dataNasc}
-                    </p>
-
-                    <p>
-                        <strong>Telefone:</strong>
-                        ${aluno.telefone}
-                    </p>
-
-                    <p>
-                        <strong>E-mail:</strong>
-                        ${aluno.email || 'N/A'}
-                    </p>
-
-                    <p>
-                        <strong>Ensino:</strong>
-                        ${aluno.ensino}
-                    </p>
+                document.getElementById('modalInfoBody').innerHTML = `
+                    <p><strong>Nome Completo:</strong> ${aluno.nome}</p>
+                    <p><strong>CPF:</strong> ${aluno.cpf}</p>
+                    <p><strong>Matrícula:</strong> ${aluno.matricula || 'N/A'}</p>
+                    <p><strong>Data de Nascimento:</strong> ${dataNasc}</p>
+                    <p><strong>Telefone:</strong> ${aluno.telefone}</p>
+                    <p><strong>E-mail:</strong> ${aluno.email || 'N/A'}</p>
+                    <p><strong>Ensino:</strong> ${aluno.ensino}</p>
                 `;
-
-                document.getElementById(
-                    'modalInfo'
-                ).style.display = 'flex';
+                document.getElementById('modalInfo').style.display = 'flex';
             }
         }
 
         function fecharModal() {
-
-            document.getElementById(
-                'modalInfo'
-            ).style.display = 'none';
+            document.getElementById('modalInfo').style.display = 'none';
         }
 
         function toggleEditar(cpf) {
-
-            const painel =
-                document.getElementById(
-                    `painel-${cpf}`
-                );
-
-            painel.style.display =
-                painel.style.display === 'block'
-                    ? 'none'
-                    : 'block';
+            const painel = document.getElementById(`painel-${cpf}`);
+            painel.style.display = (painel.style.display === 'block') ? 'none' : 'block';
         }
 
-        function marcarColunaAluno(
-            cpf,
-            numeroEtapa,
-            status
-        ) {
-
-            disciplinasMedio.forEach(
-                disc => {
-
-                    const cb =
-                        document.querySelector(
-                            `input[type="checkbox"][data-cpf="${cpf}"][data-disc="${disc}"][data-etapa="${numeroEtapa}"]:not([disabled])`
-                        );
-
-                    if (cb) {
-
-                        cb.checked = status;
-
-                        aoAlterarCheckbox(
-                            cpf,
-                            disc,
-                            numeroEtapa,
-                            status
-                        );
-                    }
+        function marcarColunaAluno(cpf, numeroEtapa, status) {
+            disciplinasMedio.forEach(disc => {
+                const cb = document.querySelector(`input[type="checkbox"][data-cpf="${cpf}"][data-disc="${disc}"][data-etapa="${numeroEtapa}"]:not([disabled])`);
+                if (cb) {
+                    cb.checked = status;
+                    aoAlterarCheckbox(cpf, disc, numeroEtapa, status);
                 }
-            );
+            });
         }
 
         function salvarAlteracoesModoSilencioso(cpf) {
-
-            let todosAlunos =
-                JSON.parse(
-                    localStorage.getItem('cadastroAlunos')
-                ) || [];
-
-            const idxAluno =
-                todosAlunos.findIndex(
-                    a => a.cpf === cpf
-                );
+            let todosAlunos = JSON.parse(localStorage.getItem('cadastroAlunos')) || [];
+            const idxAluno = todosAlunos.findIndex(a => a.cpf === cpf);
 
             if (idxAluno !== -1) {
-
                 let novoHistorico = {};
                 let novasNotasSec = {};
 
-                disciplinasMedio.forEach(
-                    disc => {
+                disciplinasMedio.forEach(disc => {
+                    novoHistorico[disc] = [];
+                    novasNotasSec[disc] = [];
 
-                        novoHistorico[disc] = [];
-                        novasNotasSec[disc] = [];
+                    for (let i = 1; i <= 3; i++) {
+                        const cb = document.querySelector(`input[type="checkbox"][data-cpf="${cpf}"][data-disc="${disc}"][data-etapa="${i}"]`);
+                        const inputNota = document.querySelector(`input[type="text"][data-cpf="${cpf}"][data-disc="${disc}"][data-etapa="${i}"]`);
 
-                        for (
-                            let i = 1;
-                            i <= 3;
-                            i++
-                        ) {
+                        let estaMarcado = cb ? cb.checked : false;
+                        let valNota = inputNota ? inputNota.value.replace('(SEC)', '').replace('HIST. APROV.', '').trim() : '';
 
-                            const cb =
-                                document.querySelector(
-                                    `input[type="checkbox"][data-cpf="${cpf}"][data-disc="${disc}"][data-etapa="${i}"]`
-                                );
+                        if (valNota !== '' && !validarNotaMinima(valNota)) {
+                            valNota = '';
+                            estaMarcado = false;
+                        }
 
-                            const inputNota =
-                                document.querySelector(
-                                    `input[type="text"][data-cpf="${cpf}"][data-disc="${disc}"][data-etapa="${i}"]`
-                                );
+                        novasNotasSec[disc].push(valNota);
 
-                            let estaMarcado =
-                                cb
-                                    ? cb.checked
-                                    : false;
-
-                            let valNota =
-                                inputNota
-                                    ? inputNota.value
-                                        .replace('(SEC)', '')
-                                        .replace('HIST. APROV.', '')
-                                        .trim()
-                                    : '';
-
-                            if (
-                                valNota !== '' &&
-                                !validarNotaMinima(valNota)
-                            ) {
-
-                                valNota = '';
-                                estaMarcado = false;
-                            }
-
-                            novasNotasSec[disc]
-                                .push(valNota);
-
-                            novoHistorico[disc]
-                                .push(estaMarcado);
+                        if (estaMarcado) {
+                            novoHistorico[disc].push(true);
+                        } else {
+                            novoHistorico[disc].push(false);
                         }
                     }
-                );
+                });
 
-                todosAlunos[idxAluno]
-                    .historico =
-                    novoHistorico;
-
-                todosAlunos[idxAluno]
-                    .notas_secretaria =
-                    novasNotasSec;
-
-                localStorage.setItem(
-                    'cadastroAlunos',
-                    JSON.stringify(todosAlunos)
-                );
+                todosAlunos[idxAluno].historico = novoHistorico;
+                todosAlunos[idxAluno].notas_secretaria = novasNotasSec;
+                localStorage.setItem('cadastroAlunos', JSON.stringify(todosAlunos));
             }
         }
 
         function recarregarEConfirmar(cpf) {
-
             salvarAlteracoesModoSilencioso(cpf);
-
             carregarAlunos();
-
             toggleEditar(cpf);
-
-            alert(
-                "Atualizado com sucesso!"
-            );
+            alert("Atualizado com sucesso!");
         }
 
         function excluirAluno(cpf) {
-
-            if (
-                confirm(
-                    "Tem certeza que deseja excluir este aluno?"
-                )
-            ) {
-
-                let todosAlunos =
-                    JSON.parse(
-                        localStorage.getItem('cadastroAlunos')
-                    ) || [];
-
-                todosAlunos =
-                    todosAlunos.filter(
-                        a => a.cpf !== cpf
-                    );
-
-                localStorage.setItem(
-                    'cadastroAlunos',
-                    JSON.stringify(todosAlunos)
-                );
-
+            if (confirm("Tem certeza que deseja excluir este aluno?")) {
+                let todosAlunos = JSON.parse(localStorage.getItem('cadastroAlunos')) || [];
+                todosAlunos = todosAlunos.filter(a => a.cpf !== cpf);
+                localStorage.setItem('cadastroAlunos', JSON.stringify(todosAlunos));
                 carregarAlunos();
             }
         }
 
         function filtrarAlunos() {
-
-            const termo =
-                document.getElementById(
-                    'inputBusca'
-                ).value.toLowerCase();
-
-            const wrappers =
-                document.querySelectorAll(
-                    '.aluno-wrapper'
-                );
-
-            wrappers.forEach(
-                w => {
-
-                    w.style.display =
-                        w.dataset.busca.includes(
-                            termo
-                        )
-                            ? 'block'
-                            : 'none';
-                }
-            );
+            const termo = document.getElementById('inputBusca').value.toLowerCase();
+            const wrappers = document.querySelectorAll('.aluno-wrapper');
+            wrappers.forEach(w => {
+                w.style.display = w.dataset.busca.includes(termo) ? 'block' : 'none';
+            });
         }
 
-        window.onclick =
-            function(event) {
+        window.onclick = function(event) {
+            const modal = document.getElementById('modalInfo');
+            if (event.target === modal) {
+                fecharModal();
+            }
+        }
 
-                const modal =
-                    document.getElementById(
-                        'modalInfo'
-                    );
-
-                if (
-                    event.target === modal
-                ) {
-                    fecharModal();
-                }
-            };
-
-        /*
-         * IMPORTANTE:
-         * não usar window.onload aqui.
-         *
-         * O firebase-cloud.js executa este
-         * código depois que termina de buscar
-         * os dados do Firestore.
-         */
         carregarAlunos();
-
     </script>
-
 </body>
 </html>
