@@ -20,6 +20,7 @@
 
     "use strict";
 
+
     /*
      * =========================================================
      * CONFIGURAÇÃO DO FIREBASE
@@ -29,7 +30,7 @@
     const firebaseConfig = {
 
         apiKey:
-            "AIzaSyAYa8tTEJ4raHcdBdDnFIZlF7y2LjTX8",
+            "AIzaSyAYa8tTEJ4raHcdpdBdDnFIZlF7y2LjTX8",
 
         authDomain:
             "ceeja-linhares-sistema.firebaseapp.com",
@@ -102,31 +103,29 @@
 
     /*
      * =========================================================
-     * CONTROLE
+     * CONTROLE DAS FILAS
      * =========================================================
      */
 
     const filas = new Map();
 
+
     /*
-     * Guardamos o setItem ORIGINAL.
+     * Método ORIGINAL do localStorage.
      *
-     * Isso é muito importante.
-     *
-     * Quando interceptarmos localStorage.setItem,
-     * não podemos chamar o próprio setItem novamente,
-     * senão criamos um loop.
+     * Isso é importante para evitar loop de sincronização.
      */
 
     const nativeSetItem =
         Storage.prototype.setItem;
+
 
     let firebasePronto = false;
 
 
     /*
      * =========================================================
-     * CARREGAR BIBLIOTECA DO FIREBASE
+     * CARREGAR SCRIPT DO FIREBASE
      * =========================================================
      */
 
@@ -163,13 +162,6 @@
      * =========================================================
      * EXECUTAR O CÓDIGO ORIGINAL DA PÁGINA
      * =========================================================
-     *
-     * As páginas usam:
-     *
-     * <script id="ceeja-app-script" type="text/plain">
-     *
-     * O código é executado somente depois que o Firebase
-     * terminou de inicializar.
      */
 
     function executarPaginaOriginal() {
@@ -209,6 +201,7 @@
 
         window.__erroFirebaseCadastro =
             mensagem;
+
 
         if (
             typeof window.mostrarErroFirebase ===
@@ -381,6 +374,7 @@
 
     async function hidratarSistema(db) {
 
+
         /*
          * -----------------------------------------------------
          * COLEÇÕES
@@ -402,8 +396,8 @@
 
 
                 /*
-                 * Só substituímos o localStorage
-                 * se realmente houver dados na nuvem.
+                 * Só substitui o localStorage
+                 * se houver dados na nuvem.
                  */
 
                 if (
@@ -617,7 +611,7 @@
 
     /*
      * =========================================================
-     * SALVAR UMA COLEÇÃO NO FIRESTORE
+     * SALVAR COLEÇÃO NO FIRESTORE
      * =========================================================
      */
 
@@ -636,7 +630,7 @@
 
         /*
          * -----------------------------------------------------
-         * CONVERTER JSON
+         * TRANSFORMAR JSON
          * -----------------------------------------------------
          */
 
@@ -660,7 +654,7 @@
 
         /*
          * -----------------------------------------------------
-         * VERIFICAR SE É UMA LISTA
+         * VERIFICAR LISTA
          * -----------------------------------------------------
          */
 
@@ -729,10 +723,6 @@
                 );
 
 
-            /*
-             * GRAVA O DOCUMENTO
-             */
-
             await setDoc(
 
                 doc(
@@ -757,7 +747,7 @@
 
 
             /*
-             * Guarda o ID do Firestore
+             * Guardar ID do Firestore
              */
 
             item._firestoreId =
@@ -767,10 +757,8 @@
 
 
         /*
-         * Atualiza o localStorage
+         * Atualizar localStorage
          * usando o método ORIGINAL.
-         *
-         * Isso evita loop.
          */
 
         nativeSetItem.call(
@@ -797,11 +785,8 @@
 
     /*
      * =========================================================
-     * FILA DE SINCRONIZAÇÃO
+     * AGENDAR SINCRONIZAÇÃO
      * =========================================================
-     *
-     * Evita duas gravações simultâneas
-     * da mesma coleção.
      */
 
     function agendarColecao(
@@ -1072,6 +1057,7 @@
 
         try {
 
+
             /*
              * -------------------------------------------------
              * FIREBASE APP
@@ -1093,7 +1079,7 @@
 
             /*
              * -------------------------------------------------
-             * FIREBASE AUTH
+             * FIREBASE AUTHENTICATION
              * -------------------------------------------------
              */
 
@@ -1131,7 +1117,7 @@
 
             /*
              * -------------------------------------------------
-             * INICIALIZAR APP
+             * INICIALIZAR APLICATIVO
              * -------------------------------------------------
              */
 
@@ -1172,7 +1158,9 @@
 
 
             /*
-             * Verificação real da autenticação
+             * -------------------------------------------------
+             * CONFIRMAR AUTENTICAÇÃO
+             * -------------------------------------------------
              */
 
             if (
@@ -1249,7 +1237,7 @@
 
             /*
              * -------------------------------------------------
-             * PRIMEIRO CARREGAR A NUVEM
+             * CARREGAR DADOS DA NUVEM
              * -------------------------------------------------
              */
 
@@ -1295,7 +1283,7 @@
 
 
                     /*
-                     * Só sincronizar o localStorage
+                     * Só sincronizar localStorage
                      */
 
                     if (
@@ -1481,7 +1469,7 @@
 
             /*
              * =================================================
-             * FIREBASE PRONTO
+             * FIREBASE CONECTADO
              * =================================================
              */
 
@@ -1493,7 +1481,7 @@
 
 
             /*
-             * Agora executa o código da página.
+             * Executar código original da página
              */
 
             executarPaginaOriginal();
@@ -1557,7 +1545,7 @@
 
 
             /*
-             * Mostra o erro verdadeiro.
+             * Mostrar o erro verdadeiro
              */
 
             mostrarErro(
@@ -1568,8 +1556,8 @@
 
 
             /*
-             * Mesmo com Firebase indisponível,
-             * o sistema continua funcionando localmente.
+             * Mesmo sem Firebase,
+             * permite o sistema funcionar localmente.
              */
 
             executarPaginaOriginal();
@@ -1581,7 +1569,7 @@
 
     /*
      * =========================================================
-     * INICIAR
+     * INICIAR SISTEMA
      * =========================================================
      */
 
