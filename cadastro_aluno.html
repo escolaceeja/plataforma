@@ -103,6 +103,17 @@
         </div>
     </div>
 
+    <script>
+        window.mostrarErroFirebase = function(mensagem) {
+            const el = document.getElementById("alertaErro");
+            if (el) {
+                el.innerText = mensagem;
+                el.style.display = "block";
+            } else {
+                alert(mensagem);
+            }
+        };
+    </script>
     <script src="firebase-cloud.js"></script>
     <script id="ceeja-app-script" type="text/plain">
         const perfilLogado = sessionStorage.getItem('perfilLogado');
