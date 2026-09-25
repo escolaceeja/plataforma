@@ -1114,6 +1114,58 @@
          * confirmar a gravação.
          */
 
+
+        /*
+         * ======================================================
+         * AGUARDAR FIREBASE
+         * ======================================================
+         */
+        function aguardarFirebase(tempoMaximo = 15000) {
+
+            return new Promise(function(resolve, reject) {
+
+                const inicio = Date.now();
+
+                function verificar() {
+
+                    if (
+                        window.CEEJAFirebase &&
+                        window.CEEJAFirebase.pronto &&
+                        typeof window.CEEJAFirebase.salvarColecao === 'function'
+                    ) {
+                        resolve();
+                        return;
+                    }
+
+                    if (
+                        window.CEEJAFirebase &&
+                        window.CEEJAFirebase.erro
+                    ) {
+                        reject(
+                            new Error(
+                                window.CEEJAFirebase.erro
+                            )
+                        );
+                        return;
+                    }
+
+                    if (Date.now() - inicio >= tempoMaximo) {
+                        reject(
+                            new Error(
+                                "O Firebase não respondeu dentro do tempo esperado."
+                            )
+                        );
+                        return;
+                    }
+
+                    setTimeout(verificar, 300);
+                }
+
+                verificar();
+            });
+        }
+
+
         async function cadastrarAluno(
             event
         ) {
@@ -1153,35 +1205,35 @@
              * --------------------------------------------------
              */
 
-            if (
+            try {
 
-                !window.CEEJAFirebase ||
+                await aguardarFirebase();
 
-                !window.CEEJAFirebase.pronto
+            }
 
-            ) {
+            catch (erroFirebase) {
+
+                console.error(
+                    "CEEJA: Firebase não está pronto:",
+                    erroFirebase
+                );
 
                 msgErro.innerText =
-
-                    "O Firebase não está conectado. " +
-
+                    "Não foi possível conectar ao Firebase. " +
                     (
-                        window.CEEJAFirebase &&
-                        window.CEEJAFirebase.erro
-
-                            ? window.CEEJAFirebase.erro
-
+                        erroFirebase &&
+                        erroFirebase.message
+                            ? erroFirebase.message
                             : "Aguarde alguns segundos e tente novamente."
                     );
-
 
                 msgErro.style.display =
                     'block';
 
-
                 return;
 
             }
+
 
 
             /*
@@ -1264,7 +1316,7 @@
                 alunos.some(
 
                     aluno =>
-                        aluno.cpf ===
+                        String(aluno.cpf || '').replace(/\D/g, '') ===
                         cpfLimpo
 
                 )
@@ -1547,7 +1599,41 @@
         }
 
 
-    </script>
+    
+        /*
+         * ======================================================
+         * RESTAURAR APROVEITAMENTO AO ABRIR A PÁGINA
+         * ======================================================
+         *
+         * Alguns navegadores restauram o valor do select
+         * sem disparar o onchange.
+         */
+
+        document.addEventListener(
+            'DOMContentLoaded',
+            function () {
+
+                const ensino =
+                    document.getElementById(
+                        'ensino'
+                    );
+
+                if (
+                    ensino &&
+                    ensino.value
+                ) {
+
+                    verificarNivelEnsino(
+                        ensino.value
+                    );
+
+                }
+
+            }
+        );
+
+
+</script>
 
 
 </body>
