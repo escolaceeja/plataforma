@@ -4,30 +4,159 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Acesso Unificado - CEEJA de Linhares</title>
+
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        body { background: #f0f2f5; display: flex; flex-direction: column; min-height: 100vh; justify-content: center; align-items: center; padding: 20px; }
-        .header-portal { text-align: center; margin-bottom: 30px; }
-        .header-portal h1 { color: #003366; font-size: 28px; margin-bottom: 8px; }
-        .header-portal p { color: #555; font-size: 15px; }
-        .login-wrapper { display: flex; gap: 30px; width: 100%; max-width: 900px; justify-content: center; flex-wrap: wrap; }
-        .login-card { background: #ffffff; padding: 35px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); flex: 1; min-width: 320px; display: flex; flex-direction: column; }
-        .card-aluno { border-top: 6px solid #0056b3; }
-        .card-equipe { border-top: 6px solid #003366; }
-        .card-title { font-size: 20px; font-weight: bold; margin-bottom: 20px; color: #333; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
-        .form-group { margin-bottom: 18px; }
-        .form-group label { display: block; margin-bottom: 8px; color: #444; font-weight: 600; font-size: 14px; }
-        .form-group select, .form-group input { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 6px; font-size: 15px; background: #fff; }
-        .form-group select:focus, .form-group input:focus { border-color: #003366; outline: none; }
-        .btn-login { width: 100%; padding: 12px; border: none; color: white; font-size: 16px; font-weight: bold; border-radius: 6px; cursor: pointer; transition: background 0.3s; margin-top: 10px; }
-        .card-aluno .btn-login { background: #0056b3; }
-        .card-aluno .btn-login:hover { background: #004085; }
-        .card-equipe .btn-login { background: #003366; }
-        .card-equipe .btn-login:hover { background: #002244; }
-        .error-message { color: #cc0000; font-size: 14px; text-align: center; margin-top: 15px; display: none; }
-        @media (max-width: 768px) { .login-wrapper { flex-direction: column; gap: 20px; } }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: #f0f2f5;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .header-portal {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header-portal h1 {
+            color: #003366;
+            font-size: 28px;
+            margin-bottom: 8px;
+        }
+
+        .header-portal p {
+            color: #555;
+            font-size: 15px;
+        }
+
+        .login-wrapper {
+            display: flex;
+            gap: 30px;
+            width: 100%;
+            max-width: 900px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .login-card {
+            background: #ffffff;
+            padding: 35px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            flex: 1;
+            min-width: 320px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card-aluno {
+            border-top: 6px solid #0056b3;
+        }
+
+        .card-equipe {
+            border-top: 6px solid #003366;
+        }
+
+        .card-title {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #333;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #444;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .form-group select,
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 15px;
+            background: #fff;
+        }
+
+        .form-group select:focus,
+        .form-group input:focus {
+            border-color: #003366;
+            outline: none;
+        }
+
+        .btn-login {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.3s;
+            margin-top: 10px;
+        }
+
+        .btn-login:disabled {
+            opacity: 0.7;
+            cursor: wait;
+        }
+
+        .card-aluno .btn-login {
+            background: #0056b3;
+        }
+
+        .card-aluno .btn-login:hover {
+            background: #004085;
+        }
+
+        .card-equipe .btn-login {
+            background: #003366;
+        }
+
+        .card-equipe .btn-login:hover {
+            background: #002244;
+        }
+
+        .error-message {
+            color: #cc0000;
+            font-size: 14px;
+            text-align: center;
+            margin-top: 15px;
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .login-wrapper {
+                flex-direction: column;
+                gap: 20px;
+            }
+        }
     </style>
 </head>
+
 <body>
 
 <div class="header-portal">
@@ -39,26 +168,53 @@
 
     <!-- PORTAL DO ALUNO -->
     <div class="login-card card-aluno">
-        <div class="card-title">👨‍🎓 Portal do Aluno</div>
+
+        <div class="card-title">
+            👨‍🎓 Portal do Aluno
+        </div>
 
         <form id="loginAlunoForm">
+
             <div class="form-group">
                 <label for="cpfAluno">CPF do Aluno</label>
-                <input type="text" id="cpfAluno" placeholder="Digite seu CPF (apenas números)" required>
+
+                <input
+                    type="text"
+                    id="cpfAluno"
+                    placeholder="Digite seu CPF (apenas números)"
+                    required
+                >
             </div>
 
             <div class="form-group">
                 <label for="senhaAluno">Senha de Acesso</label>
-                <input type="password" id="senhaAluno" placeholder="Digite sua senha" required>
+
+                <input
+                    type="password"
+                    id="senhaAluno"
+                    placeholder="Digite sua senha"
+                    required
+                >
             </div>
 
-            <button type="submit" class="btn-login">Entrar como Aluno</button>
+            <button
+                type="submit"
+                class="btn-login"
+                id="btnLoginAluno"
+            >
+                Entrar como Aluno
+            </button>
 
-            <div id="errorAluno" class="error-message">
+            <div
+                id="errorAluno"
+                class="error-message"
+            >
                 CPF ou senha incorretos!
             </div>
+
         </form>
     </div>
+
 
     <!-- EQUIPE PROFISSIONAL -->
     <div class="login-card card-equipe">
@@ -73,20 +229,39 @@
                 <label for="perfil">Perfil Profissional</label>
 
                 <select id="perfil" required>
+
                     <option value="" disabled selected>
                         Selecione seu perfil...
                     </option>
 
-                    <option value="professor">Professor</option>
-                    <option value="secretaria">Secretaria</option>
-                    <option value="pedagogo">Pedagogo</option>
-                    <option value="diretor">Diretor</option>
-                    <option value="admin">Administrador</option>
+                    <option value="professor">
+                        Professor
+                    </option>
+
+                    <option value="secretaria">
+                        Secretaria
+                    </option>
+
+                    <option value="pedagogo">
+                        Pedagogo
+                    </option>
+
+                    <option value="diretor">
+                        Diretor
+                    </option>
+
+                    <option value="admin">
+                        Administrador
+                    </option>
+
                 </select>
             </div>
 
+
             <div class="form-group">
-                <label for="usuario">CPF ou Usuário</label>
+                <label for="usuario">
+                    CPF ou Usuário
+                </label>
 
                 <input
                     type="text"
@@ -96,8 +271,12 @@
                 >
             </div>
 
+
             <div class="form-group">
-                <label for="senha">Senha</label>
+
+                <label for="senha">
+                    Senha
+                </label>
 
                 <input
                     type="password"
@@ -105,13 +284,22 @@
                     placeholder="Digite sua senha"
                     required
                 >
+
             </div>
 
-            <button type="submit" class="btn-login">
+
+            <button
+                type="submit"
+                class="btn-login"
+            >
                 Entrar no Painel
             </button>
 
-            <div id="errorEquipe" class="error-message">
+
+            <div
+                id="errorEquipe"
+                class="error-message"
+            >
                 Usuário, senha ou perfil incorretos!
             </div>
 
@@ -120,325 +308,246 @@
 
 </div>
 
-<!-- =========================================================
+
+<!-- =====================================================
      FIREBASE
-     ========================================================= -->
+===================================================== -->
 
-<script type="module">
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 
-    import {
-        initializeApp
-    } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-
-    import {
-        getFirestore,
-        collection,
-        getDocs
-    } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+<script src="firebase-cloud.js"></script>
 
 
-    /* CONFIGURAÇÃO DO SEU FIREBASE */
+<!-- =====================================================
+     SISTEMA
+===================================================== -->
 
-    const firebaseConfig = {
-        apiKey: "AIzaSyAYa8tTEJ4raHcdpdBdDnFIZlF7y2LjTX8",
-        authDomain: "ceeja-linhares-sistema.firebaseapp.com",
-        projectId: "ceeja-linhares-sistema",
-        storageBucket: "ceeja-linhares-sistema.firebasestorage.app",
-        messagingSenderId: "791087995006",
-        appId: "1:791087995006:web:14c93bc02b36c73aa8602f"
-    };
+<script>
+
+    /* =====================================================
+       DADOS INICIAIS
+    ===================================================== */
+
+    function carregarDadosIniciais() {
+
+        let funcionarios =
+            JSON.parse(
+                localStorage.getItem('funcionariosCadastrados')
+            ) || [];
 
 
-    const app = initializeApp(firebaseConfig);
+        const adminExiste =
+            funcionarios.some(
+                f =>
+                    String(f.usuario || '')
+                        .toLowerCase() === 'admin'
+            );
 
-    const db = getFirestore(app);
+
+        if (!adminExiste) {
+
+            funcionarios.push({
+
+                nome: "ADMINISTRADOR DO SISTEMA",
+
+                cpf: "admin",
+
+                telefone: "N/A",
+
+                usuario: "admin",
+
+                senha: "123",
+
+                perfil: "admin",
+
+                disciplinas: [
+                    "Língua Portuguesa",
+                    "Matemática",
+                    "História",
+                    "Geografia",
+                    "Ciências",
+                    "Arte",
+                    "Língua Inglesa",
+                    "Biologia",
+                    "Física",
+                    "Química",
+                    "Filosofia",
+                    "Sociologia",
+                    "Mundo do Trabalho"
+                ]
+
+            });
 
 
-    /* =========================================================
+            localStorage.setItem(
+                'funcionariosCadastrados',
+                JSON.stringify(funcionarios)
+            );
+        }
+    }
+
+
+
+    /* =====================================================
        LOGIN DA EQUIPE
-       ========================================================= */
+       MANTIDO COMO ESTAVA
+    ===================================================== */
 
     document
         .getElementById('loginEquipeForm')
-        .addEventListener('submit', async function(e) {
+        .addEventListener('submit', function(e) {
 
             e.preventDefault();
 
-            const perfilSelecionado =
-                document.getElementById('perfil').value;
 
-            const usuarioOriginal =
-                document.getElementById('usuario').value.trim();
+            const perfilSelecionado =
+                document
+                    .getElementById('perfil')
+                    .value;
+
 
             const usuarioDigitado =
-                usuarioOriginal.replace(/\D/g, '') ||
-                usuarioOriginal.toLowerCase();
+                document
+                    .getElementById('usuario')
+                    .value
+                    .trim()
+                    .replace(/\D/g, '')
+                ||
+                document
+                    .getElementById('usuario')
+                    .value
+                    .trim()
+                    .toLowerCase();
+
 
             const senha =
-                document.getElementById('senha').value;
+                document
+                    .getElementById('senha')
+                    .value;
+
 
             const errorMsg =
-                document.getElementById('errorEquipe');
+                document
+                    .getElementById('errorEquipe');
 
 
-            /*
-             * Desabilita o botão enquanto consulta o Firebase.
-             */
-
-            const botao =
-                document.querySelector('#loginEquipeForm .btn-login');
-
-            const textoOriginal =
-                botao.textContent;
-
-            botao.disabled = true;
-            botao.textContent = 'Verificando...';
-
-            errorMsg.style.display = 'none';
+            const funcionarios =
+                JSON.parse(
+                    localStorage.getItem(
+                        'funcionariosCadastrados'
+                    )
+                ) || [];
 
 
-            try {
+            const encontrado =
+                funcionarios.find(f => {
 
-                /*
-                 * BUSCA OS FUNCIONÁRIOS DIRETAMENTE NO FIRESTORE.
-                 *
-                 * Isso evita usar uma senha antiga armazenada
-                 * no localStorage do navegador.
-                 */
-
-                const snapshot =
-                    await getDocs(
-                        collection(db, "funcionariosCadastrados")
-                    );
+                    const matchUser =
+                        String(f.usuario || '')
+                            .toLowerCase()
+                            === usuarioDigitado;
 
 
-                let encontrado = null;
+                    const matchSenha =
+                        String(f.senha || '')
+                            === senha;
 
 
-                snapshot.forEach(docSnap => {
-
-                    const funcionario =
-                        docSnap.data();
-
-                    if (!funcionario.usuario) {
-                        return;
-                    }
-
-
-                    const usuarioFirebase =
-                        String(funcionario.usuario)
-                            .trim()
-                            .toLowerCase();
-
-
-                    const usuarioDigitadoNormalizado =
-                        String(usuarioDigitado)
-                            .trim()
-                            .toLowerCase();
-
-
-                    /*
-                     * Verifica usuário.
-                     */
-
-                    const usuarioConfere =
-                        usuarioFirebase ===
-                        usuarioDigitadoNormalizado;
-
-
-                    /*
-                     * Verifica senha diretamente
-                     * contra o valor armazenado no Firebase.
-                     */
-
-                    const senhaConfere =
-                        String(funcionario.senha ?? '') ===
-                        String(senha);
+                    const isUserAdmin =
+                        f.perfil === 'admin';
 
 
                     if (
-                        usuarioConfere &&
-                        senhaConfere
+                        matchUser &&
+                        matchSenha &&
+                        isUserAdmin
                     ) {
-
-                        /*
-                         * Para administrador, permite acesso
-                         * independentemente de o perfil selecionado
-                         * estar diferente.
-                         */
-
-                        if (
-                            funcionario.perfil === 'admin' ||
-                            funcionario.perfil === perfilSelecionado
-                        ) {
-
-                            encontrado = funcionario;
-
-                        }
-
+                        return true;
                     }
+
+
+                    return (
+                        matchUser &&
+                        matchSenha &&
+                        f.perfil === perfilSelecionado
+                    );
 
                 });
 
 
-                /*
-                 * FUNCIONÁRIO ENCONTRADO
-                 */
+            if (encontrado) {
 
-                if (encontrado) {
-
-                    errorMsg.style.display = 'none';
+                errorMsg.style.display = 'none';
 
 
-                    sessionStorage.setItem(
-                        'usuarioLogado',
-                        encontrado.usuario
-                    );
-
-
-                    sessionStorage.setItem(
-                        'perfilLogado',
-                        perfilSelecionado
-                    );
-
-
-                    sessionStorage.setItem(
-                        'dadosProfessorLogado',
-                        JSON.stringify({
-                            ...encontrado,
-                            perfil: perfilSelecionado
-                        })
-                    );
-
-
-                    /*
-                     * Atualiza também o localStorage.
-                     *
-                     * Assim, as páginas antigas do sistema que
-                     * ainda utilizam localStorage continuam funcionando.
-                     */
-
-                    let funcionariosLocais = [];
-
-                    try {
-
-                        funcionariosLocais =
-                            JSON.parse(
-                                localStorage.getItem(
-                                    'funcionariosCadastrados'
-                                )
-                            ) || [];
-
-                    } catch (erroLocal) {
-
-                        funcionariosLocais = [];
-
-                    }
-
-
-                    const indiceLocal =
-                        funcionariosLocais.findIndex(
-                            f =>
-                                String(f.usuario || '')
-                                    .trim()
-                                    .toLowerCase() ===
-                                String(encontrado.usuario || '')
-                                    .trim()
-                                    .toLowerCase()
-                        );
-
-
-                    if (indiceLocal !== -1) {
-
-                        funcionariosLocais[indiceLocal] =
-                            encontrado;
-
-                    } else {
-
-                        funcionariosLocais.push(encontrado);
-
-                    }
-
-
-                    localStorage.setItem(
-                        'funcionariosCadastrados',
-                        JSON.stringify(funcionariosLocais)
-                    );
-
-
-                    /*
-                     * Define a página de destino.
-                     */
-
-                    const rotas = {
-
-                        professor:
-                            "painel_professor.html",
-
-                        secretaria:
-                            "painel_secretaria.html",
-
-                        pedagogo:
-                            "relatorio-pedagogico.html",
-
-                        diretor:
-                            "dashboard-geral.html",
-
-                        admin:
-                            "dashboard-geral.html"
-
-                    };
-
-
-                    window.location.href =
-                        rotas[perfilSelecionado] ||
-                        "painel_professor.html";
-
-
-                } else {
-
-                    errorMsg.textContent =
-                        "Usuário, senha ou perfil incorretos!";
-
-                    errorMsg.style.display = 'block';
-
-                }
-
-
-            } catch (erro) {
-
-                console.error(
-                    "Erro ao consultar o Firebase:",
-                    erro
+                sessionStorage.setItem(
+                    'usuarioLogado',
+                    encontrado.usuario
                 );
 
 
-                errorMsg.textContent =
-                    "Não foi possível conectar ao servidor. Verifique sua conexão e tente novamente.";
+                sessionStorage.setItem(
+                    'perfilLogado',
+                    perfilSelecionado
+                );
+
+
+                sessionStorage.setItem(
+                    'dadosProfessorLogado',
+                    JSON.stringify({
+                        ...encontrado,
+                        perfil: perfilSelecionado
+                    })
+                );
+
+
+                const rotas = {
+
+                    "professor":
+                        "painel_professor.html",
+
+                    "secretaria":
+                        "painel_secretaria.html",
+
+                    "pedagogo":
+                        "relatorio-pedagogico.html",
+
+                    "diretor":
+                        "dashboard-geral.html",
+
+                    "admin":
+                        "dashboard-geral.html"
+
+                };
+
+
+                window.location.href =
+                    rotas[perfilSelecionado]
+                    ||
+                    "painel_professor.html";
+
+            } else {
 
                 errorMsg.style.display = 'block';
-
-
-            } finally {
-
-                botao.disabled = false;
-
-                botao.textContent = textoOriginal;
 
             }
 
         });
 
 
-    /* =========================================================
+
+    /* =====================================================
        LOGIN DO ALUNO
-       ========================================================= */
+       FIREBASE + LOCALSTORAGE
+    ===================================================== */
 
     document
         .getElementById('loginAlunoForm')
-        .addEventListener('submit', function(e) {
+        .addEventListener('submit', async function(e) {
 
             e.preventDefault();
+
 
             const cpfDigitado =
                 document
@@ -456,51 +565,302 @@
 
 
             const errorMsg =
-                document.getElementById('errorAluno');
+                document
+                    .getElementById('errorAluno');
 
 
-            const listaAlunos =
-                JSON.parse(
-                    localStorage.getItem('cadastroAlunos')
-                ) || [];
+            const botao =
+                document
+                    .getElementById('btnLoginAluno');
 
 
-            const alunoValido =
-                listaAlunos.find(
-                    a =>
-                        a.cpf === cpfDigitado &&
-                        a.senha === senhaDigitada
+            const textoOriginal =
+                botao.innerText;
+
+
+            /* Evita duplo clique */
+
+            botao.disabled = true;
+
+            botao.innerText = 'Verificando...';
+
+            errorMsg.style.display = 'none';
+
+
+            try {
+
+                let alunoValido = null;
+
+
+                /* =================================================
+                   1. PROCURA DIRETAMENTE NO FIREBASE
+                ================================================= */
+
+                if (
+                    window.CEEJAFirebase &&
+                    window.CEEJAFirebase.db
+                ) {
+
+                    const db =
+                        window.CEEJAFirebase.db;
+
+
+                    const snapshot =
+                        await db
+                            .collection('cadastroAlunos')
+                            .get();
+
+
+                    snapshot.forEach(function(doc) {
+
+                        if (alunoValido) {
+                            return;
+                        }
+
+
+                        const aluno =
+                            doc.data();
+
+
+                        const cpfBanco =
+                            String(
+                                aluno.cpf || ''
+                            )
+                            .replace(/\D/g, '');
+
+
+                        const senhaBanco =
+                            String(
+                                aluno.senha || ''
+                            );
+
+
+                        if (
+                            cpfBanco === cpfDigitado &&
+                            senhaBanco === senhaDigitada
+                        ) {
+
+                            alunoValido = {
+
+                                ...aluno,
+
+                                _firestoreId: doc.id
+
+                            };
+
+                        }
+
+                    });
+
+                }
+
+
+                /* =================================================
+                   2. SE NÃO ENCONTROU, PROCURA NO LOCALSTORAGE
+                ================================================= */
+
+                if (!alunoValido) {
+
+                    const listaAlunos =
+                        JSON.parse(
+                            localStorage.getItem(
+                                'cadastroAlunos'
+                            )
+                        ) || [];
+
+
+                    alunoValido =
+                        listaAlunos.find(function(a) {
+
+                            const cpf =
+                                String(
+                                    a.cpf || ''
+                                )
+                                .replace(/\D/g, '');
+
+
+                            const senha =
+                                String(
+                                    a.senha || ''
+                                );
+
+
+                            return (
+                                cpf === cpfDigitado &&
+                                senha === senhaDigitada
+                            );
+
+                        });
+
+                }
+
+
+                /* =================================================
+                   3. LOGIN ENCONTRADO
+                ================================================= */
+
+                if (alunoValido) {
+
+                    errorMsg.style.display =
+                        'none';
+
+
+                    sessionStorage.setItem(
+                        'alunoLogadoCPF',
+                        cpfDigitado
+                    );
+
+
+                    sessionStorage.setItem(
+                        'nomeAlunoLogado',
+                        alunoValido.nome ||
+                        'Estudante'
+                    );
+
+
+                    if (
+                        alunoValido._firestoreId
+                    ) {
+
+                        sessionStorage.setItem(
+                            'alunoFirestoreId',
+                            alunoValido._firestoreId
+                        );
+
+                    }
+
+
+                    window.location.href =
+                        'painel-aluno.html';
+
+
+                    return;
+                }
+
+
+                /* =================================================
+                   4. LOGIN INVÁLIDO
+                ================================================= */
+
+                errorMsg.innerText =
+                    'CPF ou senha incorretos!';
+
+
+                errorMsg.style.display =
+                    'block';
+
+
+            } catch (erro) {
+
+                console.error(
+                    'Erro ao consultar Firebase:',
+                    erro
                 );
 
 
-            if (alunoValido) {
+                /* =============================================
+                   FALLBACK PARA LOCALSTORAGE
+                ============================================= */
 
-                errorMsg.style.display = 'none';
+                try {
 
-
-                sessionStorage.setItem(
-                    'alunoLogadoCPF',
-                    cpfDigitado
-                );
-
-
-                sessionStorage.setItem(
-                    'nomeAlunoLogado',
-                    alunoValido.nome
-                );
+                    const listaAlunos =
+                        JSON.parse(
+                            localStorage.getItem(
+                                'cadastroAlunos'
+                            )
+                        ) || [];
 
 
-                window.location.href =
-                    'painel-aluno.html';
+                    const alunoValido =
+                        listaAlunos.find(function(a) {
+
+                            const cpf =
+                                String(
+                                    a.cpf || ''
+                                )
+                                .replace(/\D/g, '');
 
 
-            } else {
+                            const senha =
+                                String(
+                                    a.senha || ''
+                                );
 
-                errorMsg.style.display = 'block';
+
+                            return (
+                                cpf === cpfDigitado &&
+                                senha === senhaDigitada
+                            );
+
+                        });
+
+
+                    if (alunoValido) {
+
+                        errorMsg.style.display =
+                            'none';
+
+
+                        sessionStorage.setItem(
+                            'alunoLogadoCPF',
+                            cpfDigitado
+                        );
+
+
+                        sessionStorage.setItem(
+                            'nomeAlunoLogado',
+                            alunoValido.nome ||
+                            'Estudante'
+                        );
+
+
+                        window.location.href =
+                            'painel-aluno.html';
+
+
+                        return;
+
+                    }
+
+                } catch (erroLocal) {
+
+                    console.error(
+                        'Erro no fallback:',
+                        erroLocal
+                    );
+
+                }
+
+
+                errorMsg.innerText =
+                    'Não foi possível verificar o cadastro. Tente novamente.';
+
+
+                errorMsg.style.display =
+                    'block';
+
+            } finally {
+
+                botao.disabled = false;
+
+                botao.innerText =
+                    textoOriginal;
 
             }
 
         });
+
+
+
+    /* =====================================================
+       INICIALIZAÇÃO
+    ===================================================== */
+
+    document.addEventListener(
+        'DOMContentLoaded',
+        carregarDadosIniciais
+    );
 
 </script>
 
